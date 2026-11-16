@@ -64,7 +64,7 @@ struct WorkoutPlayerView: View {
 
     private var stageBackground: some View {
         GeometryReader { proxy in
-            let photo = WarmPhotoView(photo: WarmMedia.stage(exercise.id))
+            let photo = WarmPhotoView(photo: WarmMedia.stage(exercise.id), immersive: true)
             let intensity: Double = restPhase ? 0.72 : (session.phase == .setComplete ? 0.74 : (dim ? 0.76 : 1))
             ZStack {
                 Group {
@@ -223,6 +223,7 @@ struct WorkoutPlayerView: View {
                 if !reviewing {
                     Text("动作计时 \(workoutClock(session.currentActionSeconds))")
                         .font(.caption.weight(.semibold).monospacedDigit()).foregroundStyle(Warm.slate)
+                        .accessibilityIdentifier(AccessibilityID.Player.actionTime)
                     if exercise.dumbbellCount > 0 {
                         WarmGlassButton(title: session.currentResult.load.display, icon: "slider.horizontal.3", action: openLoad)
                             .accessibilityHint("编辑当前组实际负重")
@@ -333,8 +334,10 @@ struct WorkoutPlayerView: View {
             }
             .disabled(!session.canReviewPrevious)
             StageAuxButton(title: "暂停", icon: "pause.fill") { send(.pause) }
+                .accessibilityIdentifier(AccessibilityID.Player.pause)
             StageAuxButton(title: "跳过动作", icon: "forward.end.fill") { send(.skipExercise(session.currentKey)) }
                 .disabled(reviewing)
+                .accessibilityIdentifier(AccessibilityID.Player.skip)
         }
         .padding(4)
         .warmGlass(.elevated, in: RoundedRectangle(cornerRadius: 22))
@@ -409,10 +412,13 @@ struct WorkoutPlayerView: View {
             VStack(spacing: 16) {
                 Text(session.needsResume ? "本次训练已暂存" : "主动暂停 · 已暂停 \(Int(session.pausedSeconds))s")
                     .font(.headline).foregroundStyle(Warm.slate)
+                    .accessibilityValue(session.phase == .active ? "动作计时 \(workoutClock(session.currentActionSeconds))" : "")
+                    .accessibilityIdentifier(AccessibilityID.Player.pauseStatus)
                 Text(session.currentExercise.name).font(.largeTitle.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 Text("第 \(session.position.round) 轮 · 已录 \(session.totals.completedSets) 组")
                     .font(.subheadline.monospacedDigit()).foregroundStyle(Warm.secondary)
                 WarmPrimaryButton(title: "继续跟练", icon: "play.fill") { send(.resume) }
+                    .accessibilityIdentifier(AccessibilityID.Player.resume)
                 WarmGlassButton(title: "退出或结束训练", fillsWidth: true, action: openExit)
             }
             .multilineTextAlignment(.center)

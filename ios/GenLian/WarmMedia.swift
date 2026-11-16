@@ -82,6 +82,7 @@ enum WarmMedia {
 struct WarmPhotoView: View {
     let photo: WarmPhoto?
     var message: String? = nil
+    var immersive = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -89,19 +90,13 @@ struct WarmPhotoView: View {
             ZStack {
                 Warm.studio
                 if let photo, size.width > 0, size.height > 0 {
-                    let height = photo.fit ? min(size.height, size.width / photo.ratio) : max(size.height, size.width / photo.ratio)
-                    let width = height * photo.ratio
-                    Image(decorative: photo.name)
-                        .resizable()
-                        .frame(width: width, height: height)
-                        .brightness(0.01)
-                        .contrast(1.03)
-                        .saturation(0.94)
-                        .hueRotation(.degrees(-2))
-                        .position(
-                            x: photo.fit ? size.width / 2 : width / 2 + (size.width - width) * photo.x,
-                            y: photo.fit ? size.height / 2 : height / 2 + (size.height - height) * photo.y
-                        )
+                    if immersive && photo.fit && !photo.portrait {
+                        image(photo, in: size, fit: false)
+                            .scaleEffect(1.14)
+                            .blur(radius: 44)
+                            .opacity(0.76)
+                    }
+                    image(photo, in: size, fit: photo.fit)
                 } else if let message {
                     Label(message, systemImage: "film")
                         .font(.subheadline)
@@ -115,5 +110,22 @@ struct WarmPhotoView: View {
             .frame(width: size.width, height: size.height)
             .clipped()
         }
+    }
+
+    private func image(_ photo: WarmPhoto, in size: CGSize, fit: Bool) -> some View {
+        let naturalHeight = size.width / photo.ratio
+        let height = fit ? min(size.height, naturalHeight) : max(size.height, naturalHeight)
+        let width = height * photo.ratio
+        return Image(decorative: photo.name)
+            .resizable()
+            .frame(width: width, height: height)
+            .brightness(0.01)
+            .contrast(1.03)
+            .saturation(0.94)
+            .hueRotation(.degrees(-2))
+            .position(
+                x: fit ? size.width / 2 : width / 2 + (size.width - width) * photo.x,
+                y: fit ? size.height / 2 : height / 2 + (size.height - height) * photo.y
+            )
     }
 }

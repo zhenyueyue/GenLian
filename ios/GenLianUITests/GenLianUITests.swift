@@ -56,6 +56,9 @@ final class GenLianUITests: XCTestCase {
         endWorkout(in: app)
         expectLabel(AccessibilityID.Record.groups, containing: "3/15", in: app)
         capture("06-workout-summary", in: app)
+        verifyStrengthRecords(in: app)
+        verifySummaryBottom(in: app)
+        capture("15-summary-scrolled-bottom", in: app)
         tap(AccessibilityID.Record.archive, in: app)
         _ = ready(AccessibilityID.Record.historyTitle, in: app)
         capture("07-training-history", in: app)
@@ -110,7 +113,7 @@ final class GenLianUITests: XCTestCase {
     }
 
     @MainActor
-    func testAccessibleTodayKeepsPrimaryNavigationReachable() {
+    func testLargestDynamicTypeKeepsTrainingAndArchiveReachable() {
         let app = launch(accessibility: true)
         let title = ready(AccessibilityID.Today.title, in: app)
         let start = ready(AccessibilityID.Dock.start, in: app)
@@ -126,17 +129,123 @@ final class GenLianUITests: XCTestCase {
         capture("13-accessibility-today", in: app)
         tap(AccessibilityID.Dock.archive, in: app)
         _ = ready(AccessibilityID.Record.historyTitle, in: app)
+        _ = reveal(AccessibilityID.Record.empty, in: app)
         capture("14-accessibility-empty-history", in: app)
+
+        tap(AccessibilityID.Dock.start, in: app)
+        tap(AccessibilityID.Player.prepare, in: app)
+        let movement = AccessibilityID.Player.exercise("ex-floor-press")
+        _ = reveal(movement, in: app)
+        _ = reveal(AccessibilityID.Player.actionTime, in: app)
+        XCTAssertTrue(ready(AccessibilityID.Player.complete, in: app).isHittable)
+        capture("16-accessibility-player", in: app)
+        tap(AccessibilityID.Player.complete, in: app)
+        tap(AccessibilityID.Player.enterRest, in: app)
+        expectLabel(AccessibilityID.Rest.countdown, containing: "90", in: app)
+        _ = reveal(AccessibilityID.Rest.timing, in: app)
+        XCTAssertTrue(ready(AccessibilityID.Rest.finish, in: app).isHittable)
+        capture("17-accessibility-rest", in: app)
+        tap(AccessibilityID.Rest.finish, in: app)
+        tap(AccessibilityID.Player.next, in: app)
+        _ = reveal(AccessibilityID.Player.side("left"), in: app)
+        capture("17a-accessibility-side-controls", in: app)
+        tap(AccessibilityID.Player.skip, in: app)
+        endWorkout(in: app)
+
+        let logged = AccessibilityID.Record.entry(1, 0, 1, "bilateral")
+        let skipped = AccessibilityID.Record.entry(1, 1, 1, "left")
+        expectLabel(logged, containing: "实录 12 次", in: app, afterRevealing: true)
+        expectLabel(skipped, containing: "已跳过", in: app, afterRevealing: true)
+        verifySummaryBottom(in: app)
+        capture("18-accessibility-summary-bottom", in: app)
+        tap(AccessibilityID.Record.archive, in: app)
+        let featured = reveal(AccessibilityID.Record.latest, in: app)
+        capture("19-accessibility-archived", in: app)
+        featured.tap()
+        expectLabel(logged, containing: "实录 12 次", in: app, afterRevealing: true)
     }
 
     @MainActor
-    private func launch(accessibility: Bool = false) -> XCUIApplication {
+    func testRealClockAdvancesPausesResumesAndPersistsDuration() {
+        let app = launch(freezeClock: false)
+        reveal(AccessibilityID.Today.course("strength-b"), in: app).tap()
+        tap(AccessibilityID.Dock.start, in: app)
+        _ = ready(AccessibilityID.Player.exercise("ex-shoulder-press"), in: app, timeout: 20)
+        let timer = ready(AccessibilityID.Player.actionTime, in: app)
+        let started = clockSeconds(timer.label)
+        waitForClockChange(timer)
+        XCTAssertGreaterThan(clockSeconds(timer.label), started)
+        capture("20-shoulder-press-player", in: app)
+
+        tap(AccessibilityID.Player.pause, in: app)
+        let paused = ready(AccessibilityID.Player.pauseStatus, in: app)
+        let frozen = clockSeconds(paused.value as? String ?? "")
+        XCTAssertGreaterThan(frozen, 0)
+        waitForClockChange(paused)
+        waitForClockChange(paused)
+        XCTAssertEqual(clockSeconds(paused.value as? String ?? ""), frozen)
+        capture("21-real-clock-paused", in: app)
+
+        tap(AccessibilityID.Player.resume, in: app)
+        _ = ready(AccessibilityID.Player.actionTime, in: app)
+        waitForClockChange(timer)
+        XCTAssertGreaterThan(clockSeconds(timer.label), frozen)
+        tap(AccessibilityID.Player.complete, in: app)
+        endWorkout(in: app)
+        let duration = clockSeconds(ready(AccessibilityID.Record.duration, in: app).label)
+        XCTAssertGreaterThanOrEqual(duration, frozen + 1)
+        capture("22-real-clock-summary", in: app)
+        tap(AccessibilityID.Record.archive, in: app)
+        tap(AccessibilityID.Record.latest, in: app)
+        XCTAssertEqual(clockSeconds(ready(AccessibilityID.Record.duration, in: app).label), duration)
+    }
+
+    @MainActor
+    private func launch(accessibility: Bool = false, freezeClock: Bool = true) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchEnvironment["GENLIAN_UI_TEST_ID"] = UUID().uuidString
         if accessibility { app.launchEnvironment["GENLIAN_UI_TEST_ACCESSIBILITY"] = "1" }
+        if freezeClock { app.launchEnvironment["GENLIAN_UI_TEST_FROZEN_CLOCK"] = "1" }
         app.launch()
         return app
+    }
+
+    @MainActor
+    private func verifySummaryBottom(in app: XCUIApplication) {
+        let scroll = app.scrollViews.matching(identifier: AccessibilityID.Record.scroll).firstMatch
+        let archive = ready(AccessibilityID.Record.archive, in: app)
+        let position = archive.frame
+        XCTAssertTrue(archive.isHittable)
+        XCTAssertGreaterThanOrEqual(position.height, 44)
+        let last = element(AccessibilityID.Record.entry(3, 3, 1, "bilateral"), in: app)
+        for _ in 0..<12 {
+            scroll.swipeUp()
+            if last.exists && last.isHittable && last.frame.maxY <= position.minY { break }
+        }
+        XCTAssertTrue(last.exists && last.isHittable)
+        XCTAssertGreaterThanOrEqual(last.frame.minY, scroll.frame.minY)
+        XCTAssertLessThanOrEqual(last.frame.maxY, position.minY)
+        XCTAssertTrue(last.label.contains("未完成"))
+        XCTAssertEqual(archive.frame, position)
+        XCTAssertTrue(archive.isHittable)
+    }
+
+    @MainActor
+    private func waitForClockChange(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        let initial = element.label
+        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label != %@", initial), object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 15), .completed, file: file, line: line)
+    }
+
+    private func clockSeconds(_ label: String, file: StaticString = #filePath, line: UInt = #line) -> Int {
+        let clock = label.split { !$0.isNumber && $0 != ":" }.first { $0.contains(":") }
+        let parts = clock?.split(separator: ":").compactMap { Int($0) }
+        guard let parts, parts.count == 2 else {
+            XCTFail("No clock in \(label)", file: file, line: line)
+            return -1
+        }
+        return parts[0] * 60 + parts[1]
     }
 
     @MainActor
@@ -166,9 +275,12 @@ final class GenLianUITests: XCTestCase {
 
     @MainActor
     @discardableResult
-    private func ready(_ id: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
+    private func ready(
+        _ id: String, in app: XCUIApplication, timeout: TimeInterval = 8,
+        file: StaticString = #filePath, line: UInt = #line
+    ) -> XCUIElement {
         let match = element(id, in: app)
-        XCTAssertTrue(match.waitForExistence(timeout: 8), "Missing \(id)\n\(app.debugDescription)", file: file, line: line)
+        XCTAssertTrue(match.waitForExistence(timeout: timeout), "Missing \(id)\n\(app.debugDescription)", file: file, line: line)
         return match
     }
 
@@ -199,10 +311,10 @@ final class GenLianUITests: XCTestCase {
 
     @MainActor
     private func expectLabel(
-        _ id: String, containing text: String, in app: XCUIApplication,
+        _ id: String, containing text: String, in app: XCUIApplication, afterRevealing: Bool = false,
         file: StaticString = #filePath, line: UInt = #line
     ) {
-        let match = ready(id, in: app, file: file, line: line)
+        let match = afterRevealing ? reveal(id, in: app, file: file, line: line) : ready(id, in: app, file: file, line: line)
         let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", text), object: match)
         XCTAssertEqual(
             XCTWaiter.wait(for: [changed], timeout: 15), .completed,

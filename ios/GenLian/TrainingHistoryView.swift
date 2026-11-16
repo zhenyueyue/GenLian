@@ -184,6 +184,7 @@ struct TrainingHistoryView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
             .background(Warm.limestone, in: RoundedRectangle(cornerRadius: 16))
+            .accessibilityIdentifier(AccessibilityID.Record.empty)
     }
 
     private func featured(_ session: WorkoutSession) -> some View {

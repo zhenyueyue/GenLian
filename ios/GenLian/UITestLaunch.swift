@@ -29,7 +29,11 @@ enum UITestLaunch {
         let file = support.appendingPathComponent("GenLianUITests", isDirectory: true)
             .appendingPathComponent(identifier.uuidString, isDirectory: true)
             .appendingPathComponent("training.json")
-        return try TrainingController(store: AtomicTrainingStore(file: file), clock: ScreenshotClock())
+        let store = AtomicTrainingStore(file: file)
+        if ProcessInfo.processInfo.environment["GENLIAN_UI_TEST_FROZEN_CLOCK"] == "1" {
+            return try TrainingController(store: store, clock: ScreenshotClock())
+        }
+        return try TrainingController(store: store)
     }
 
     private struct ScreenshotClock: WorkoutClock {

@@ -16,7 +16,7 @@ struct GenLianApp: App {
     private var content: some View {
         #if DEBUG
         if UITestLaunch.accessibilityPreview {
-            TrainingShell(model: model).dynamicTypeSize(.accessibility2)
+            TrainingShell(model: model).dynamicTypeSize(.accessibility5)
         } else {
             TrainingShell(model: model)
         }

@@ -162,6 +162,7 @@ private struct WorkoutRecordContent: View {
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
+            .accessibilityIdentifier(AccessibilityID.Record.scroll)
         }
         .background(Warm.canvas.ignoresSafeArea())
         .foregroundStyle(Warm.ink)
@@ -243,6 +244,7 @@ private struct WorkoutRecordContent: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             WarmMetric(value: workoutClock(session.elapsedSeconds), label: "有效时长", highlighted: true)
                 .accessibilityHint("包括记录的动作、休息与过渡时间")
+                .accessibilityIdentifier(AccessibilityID.Record.duration)
         }
     }
 
