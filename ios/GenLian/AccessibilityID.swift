@@ -20,6 +20,7 @@ enum AccessibilityID {
     enum Setup {
         static let title = "setup.title"
         static let start = "setup.start"
+        static let autoAdvance = "setup.rest.auto-advance"
         static func plates(_ grams: Int) -> String { "setup.plates.\(grams)" }
     }
 

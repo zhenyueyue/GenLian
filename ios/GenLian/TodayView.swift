@@ -108,10 +108,9 @@ struct TodayView: View {
                 .init(color: Warm.canvas, location: 1)
             ], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 7) {
-                Text((media?.kicker ?? plan.category.rawValue) + (heroTitleParts.scope.map { " · \($0)" } ?? ""))
+                heroKicker
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Warm.accentText)
-                    .accessibilityIdentifier(AccessibilityID.Today.scope)
                 Text(heroTitleParts.title).font(.system(size: heroTitle, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier(AccessibilityID.Today.title)
@@ -126,6 +125,20 @@ struct TodayView: View {
         }
         .frame(height: height)
         .clipped()
+    }
+
+    @ViewBuilder
+    private var heroKicker: some View {
+        let kicker = media?.kicker ?? plan.category.rawValue
+        if typeSize.isAccessibilitySize, let scope = heroTitleParts.scope {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(kicker)
+                Text(scope).accessibilityIdentifier(AccessibilityID.Today.scope)
+            }
+        } else {
+            Text(kicker + (heroTitleParts.scope.map { " · \($0)" } ?? ""))
+                .accessibilityIdentifier(AccessibilityID.Today.scope)
+        }
     }
 
     private var actions: some View {

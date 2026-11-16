@@ -17,6 +17,8 @@ final class GenLianUITests: XCTestCase {
         _ = ready(AccessibilityID.Setup.title, in: app)
         capture("03-training-setup", in: app)
         reveal(AccessibilityID.Setup.plates(2500), in: app).tap()
+        _ = reveal(AccessibilityID.Setup.autoAdvance, in: app)
+        capture("03a-setup-rest-options", in: app)
         tap(AccessibilityID.Setup.start, in: app)
 
         _ = ready(AccessibilityID.Player.prepare, in: app)
@@ -119,6 +121,8 @@ final class GenLianUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(archive.frame.height, 44)
         XCTAssertTrue(app.frame.contains(archive.frame))
         XCTAssertFalse(title.frame.intersects(start.frame))
+        XCTAssertLessThanOrEqual(app.scrollViews.firstMatch.frame.maxY, start.frame.minY)
+        XCTAssertEqual(ready(AccessibilityID.Today.scope, in: app).label, "胸·背·腿·核")
         capture("13-accessibility-today", in: app)
         tap(AccessibilityID.Dock.archive, in: app)
         _ = ready(AccessibilityID.Record.historyTitle, in: app)

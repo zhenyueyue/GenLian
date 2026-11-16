@@ -30,6 +30,7 @@ private struct TrainingShell: View {
     let model: TrainingAppModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.warmReduceTransparency) private var reduceTransparency
     @Namespace private var mediaAnimation
     @State private var detailIndex: Int?
     @State private var showingWorkout = false
@@ -122,31 +123,16 @@ private struct TrainingShell: View {
     private func home(_ plan: WorkoutPlan) -> some View {
         ZStack {
             Group {
-                if showingArchive {
-                    TrainingHistoryView(
-                        archive: model.archive, justArchivedID: justArchivedID, selectedID: $focusedHistoryID
-                    )
-                } else {
-                    TodayView(
-                        model: model, plan: plan, startTitle: startTitle, start: openOrStart,
-                        showSetup: { setupPlan = plan },
-                        showDetail: { index in route { detailIndex = index } }
-                    )
-                }
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                WarmDock(
-                    showingArchive: showingArchive, canStart: canStart,
-                    openToday: { route { showingArchive = false } }, start: openOrStart,
-                    openArchive: {
-                        route {
-                            focusedHistoryID = nil
-                            showingArchive = true
-                        }
+                if reduceTransparency {
+                    VStack(spacing: 0) {
+                        homePage(plan).clipped()
+                        homeDock
                     }
-                )
-                .padding(.horizontal, Warm.pageEdge)
-                .padding(.vertical, 7)
+                } else {
+                    homePage(plan).safeAreaInset(edge: .bottom, spacing: 0) {
+                        homeDock
+                    }
+                }
             }
             .accessibilityHidden(detailIndex != nil)
             .allowsHitTesting(detailIndex == nil)
@@ -163,6 +149,34 @@ private struct TrainingShell: View {
                 .zIndex(1)
             }
         }
+    }
+
+    @ViewBuilder
+    private func homePage(_ plan: WorkoutPlan) -> some View {
+        if showingArchive {
+            TrainingHistoryView(archive: model.archive, justArchivedID: justArchivedID, selectedID: $focusedHistoryID)
+        } else {
+            TodayView(
+                model: model, plan: plan, startTitle: startTitle, start: openOrStart,
+                showSetup: { setupPlan = plan },
+                showDetail: { index in route { detailIndex = index } }
+            )
+        }
+    }
+
+    private var homeDock: some View {
+        WarmDock(
+            showingArchive: showingArchive, canStart: canStart,
+            openToday: { route { showingArchive = false } }, start: openOrStart,
+            openArchive: {
+                route {
+                    focusedHistoryID = nil
+                    showingArchive = true
+                }
+            }
+        )
+        .padding(.horizontal, Warm.pageEdge)
+        .padding(.vertical, 7)
     }
 
     private func openOrStart() {

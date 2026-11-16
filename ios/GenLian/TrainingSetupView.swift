@@ -109,6 +109,7 @@ struct TrainingSetupView: View {
             .frame(minHeight: 44)
             .padding(10)
             .warmGlass(.elevated, in: RoundedRectangle(cornerRadius: 12))
+            .accessibilityIdentifier(AccessibilityID.Setup.autoAdvance)
         }
     }
 }
