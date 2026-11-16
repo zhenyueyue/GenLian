@@ -3,9 +3,11 @@ import Foundation
 
 public enum RestNotificationAudio {
     public static func validate(_ url: URL, expectedFrames: AVAudioFramePosition? = nil) throws {
-        let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
         let header = try FileHandle(forReadingFrom: url)
         defer { try? header.close() }
+        // Read the opened file's length. URL resource metadata can outlive a replacement at the same path.
+        let size = try header.seekToEnd()
+        try header.seek(toOffset: 0)
         guard size > 8, try header.read(upToCount: 4) == Data("caff".utf8) else {
             throw ValidationError.invalidContainer
         }

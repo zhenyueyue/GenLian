@@ -273,6 +273,7 @@ private final class RestSpeechWriter: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         guard let continuation else { return false }
+        file?.close()
         file = nil
         self.continuation = nil
         continuation.resume(throwing: error)
@@ -287,6 +288,7 @@ private final class RestSpeechWriter: @unchecked Sendable {
             guard let buffer = buffer as? AVAudioPCMBuffer else { throw RestSpeechError.invalidAudio }
             if buffer.frameLength == 0 {
                 guard frames > 0 else { throw RestSpeechError.invalidAudio }
+                file?.close()
                 file = nil
                 self.continuation = nil
                 continuation.resume(returning: AVAudioFramePosition(frames))
@@ -306,6 +308,7 @@ private final class RestSpeechWriter: @unchecked Sendable {
             try file?.write(from: buffer)
             frames += Int(buffer.frameLength)
         } catch {
+            file?.close()
             file = nil
             self.continuation = nil
             continuation.resume(throwing: error)

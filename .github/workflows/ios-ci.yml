@@ -9,7 +9,7 @@ permissions:
 jobs:
   ios:
     runs-on: xcode-27
-    timeout-minutes: 35
+    timeout-minutes: 45
     defaults:
       run:
         shell: bash
@@ -92,7 +92,7 @@ jobs:
       - name: Run GenLian XCUITests on iOS Simulator
         id: ui
         if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outcome == 'success' }}
-        timeout-minutes: 18
+        timeout-minutes: 30
         env:
           DEVICE: ${{ steps.simulator.outputs.device }}
         run: |

@@ -26,6 +26,17 @@ struct RestNotificationAudioTests {
         #expect(throws: RestNotificationAudio.ValidationError.tooLong) { try RestNotificationAudio.validate(url) }
     }
 
+    @Test func validatesCurrentBytesAfterReplacingACachedSoundAtTheSameURL() throws {
+        let url = temporaryCAF()
+        defer { try? FileManager.default.removeItem(at: url) }
+        try write(url, frames: 4000, sample: 1000)
+        try RestNotificationAudio.validate(url)
+        try Data("caff".utf8).write(to: url, options: .atomic)
+        #expect(throws: RestNotificationAudio.ValidationError.invalidContainer) { try RestNotificationAudio.validate(url) }
+        try write(url, frames: 4000, sample: 1000)
+        try RestNotificationAudio.validate(url, expectedFrames: 4000)
+    }
+
     private func temporaryCAF() -> URL {
         FileManager.default.temporaryDirectory.appendingPathComponent("notification-\(UUID()).caf")
     }
@@ -37,6 +48,7 @@ struct RestNotificationAudioTests {
         let samples = try #require(buffer.int16ChannelData)
         for index in 0..<Int(frames) { samples[0][index] = sample }
         let file = try AVAudioFile(forWriting: url, settings: format.settings, commonFormat: .pcmFormatInt16, interleaved: false)
+        defer { if #available(macOS 15, iOS 18, *) { file.close() } }
         try file.write(from: buffer)
     }
 }
