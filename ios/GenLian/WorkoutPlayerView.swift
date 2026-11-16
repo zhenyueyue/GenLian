@@ -206,7 +206,9 @@ struct WorkoutPlayerView: View {
     }
 
     private var activeInformation: some View {
-        HStack(alignment: .bottom, spacing: 10) {
+        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+            : AnyLayout(HStackLayout(alignment: .bottom, spacing: 10))
+        return layout {
             VStack(alignment: .leading, spacing: 6) {
                 if reviewing {
                     Text("回看 · 第 \((session.reviewPosition ?? session.position).round) 轮")
@@ -232,15 +234,20 @@ struct WorkoutPlayerView: View {
                     }
                 }
             }
-            Spacer(minLength: 0)
+            if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
             if !reviewing { stepper }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundStyle(Warm.ink)
         .padding(.bottom, 4)
         .padding(.top, 10)
         .background(alignment: .bottom) {
-            LinearGradient(colors: [.clear, Warm.canvas.opacity(0.96)], startPoint: .top, endPoint: .bottom)
-                .allowsHitTesting(false)
+            if reduceTransparency {
+                Warm.canvas.allowsHitTesting(false)
+            } else {
+                LinearGradient(colors: [.clear, Warm.canvas.opacity(0.96)], startPoint: .top, endPoint: .bottom)
+                    .allowsHitTesting(false)
+            }
         }
     }
 
@@ -276,7 +283,8 @@ struct WorkoutPlayerView: View {
 
     private var stepper: some View {
         let measurement = session.currentResult.measurement
-        return VStack(spacing: 0) {
+        let layout = typeSize.isAccessibilitySize ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 0))
+        return layout {
             stepButton("plus", title: "增加实际\(measurement.unitText)") { changeMeasurement(1) }
                 .accessibilityIdentifier(AccessibilityID.Player.increase)
             Button {

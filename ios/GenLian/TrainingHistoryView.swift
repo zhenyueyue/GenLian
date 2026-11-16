@@ -45,24 +45,29 @@ struct TrainingHistoryView: View {
 
     private func index(_ history: TrainingHistory) -> some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 12) {
-                statistics(history.statistics)
-                if mode == .records {
-                    recordList(history)
-                } else {
-                    calendar(history)
+            VStack(spacing: 0) {
+                if typeSize == .accessibility5 { header }
+                LazyVStack(alignment: .leading, spacing: 12) {
+                    statistics(history.statistics)
+                    if mode == .records {
+                        recordList(history)
+                    } else {
+                        calendar(history)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Warm.pageEdge)
+                .padding(.vertical, 14)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Warm.pageEdge)
-            .padding(.vertical, 14)
         }
         .onScrollGeometryChange(for: Bool.self) {
             $0.contentOffset.y + $0.contentInsets.top > 8
         } action: { _, value in
             scrolled = value
         }
-        .safeAreaInset(edge: .top, spacing: 0) { header }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if typeSize != .accessibility5 { header }
+        }
         .background {
             ZStack(alignment: .top) {
                 Warm.canvas
@@ -215,9 +220,13 @@ struct TrainingHistoryView: View {
                     WarmPhotoView(photo: WarmMedia.plans[session.plan.id]?.wide)
                         .saturation(session.outcome == .zeroSets ? 0 : 1)
                         .overlay {
-                            LinearGradient(stops: [.init(color: .clear, location: 0.10),
-                                                   .init(color: Warm.ink.opacity(0.90), location: 0.85)],
-                                           startPoint: .top, endPoint: .bottom)
+                            if reduceTransparency {
+                                Warm.ink.opacity(0.82)
+                            } else {
+                                LinearGradient(stops: [.init(color: .clear, location: 0.10),
+                                                       .init(color: Warm.ink.opacity(0.90), location: 0.85)],
+                                               startPoint: .top, endPoint: .bottom)
+                            }
                         }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 16))

@@ -110,6 +110,8 @@ struct WorkoutRestView: View {
         .foregroundStyle(Warm.ink)
         .frame(maxWidth: 350, alignment: .leading)
         .warmGlass(.elevated, in: RoundedRectangle(cornerRadius: 16))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(AccessibilityID.Rest.next)
     }
 
     private func adjustButtons(_ owner: SetKey) -> some View {

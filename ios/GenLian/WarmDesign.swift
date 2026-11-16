@@ -153,6 +153,7 @@ struct WarmDock: View {
     let openArchive: @MainActor () -> Void
     @Namespace private var selection
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         HStack(spacing: 4) {
@@ -165,7 +166,7 @@ struct WarmDock: View {
                 .accessibilityIdentifier(AccessibilityID.Dock.archive)
         }
         .padding(6)
-        .frame(maxWidth: 348)
+        .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : 348)
         .warmGlass(.elevated, in: Capsule(), interactive: true)
         .animation(reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.8), value: showingArchive)
     }
@@ -174,7 +175,17 @@ struct WarmDock: View {
         _ title: String, icon: String, selected: Bool, opensPlayer: Bool = false, action: @escaping @MainActor () -> Void
     ) -> some View {
         Button { action() } label: {
-            Label(title, systemImage: icon)
+            Group {
+                if typeSize.isAccessibilitySize {
+                    VStack(spacing: 2) {
+                        Image(systemName: icon)
+                            .accessibilityHidden(true)
+                        Text(title).fixedSize(horizontal: true, vertical: false)
+                    }
+                } else {
+                    Label(title, systemImage: icon)
+                }
+            }
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(selected ? Warm.accentText : Warm.ink)
                 .multilineTextAlignment(.center)
@@ -194,6 +205,7 @@ struct WarmDock: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }

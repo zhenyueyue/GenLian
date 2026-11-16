@@ -11,6 +11,7 @@ struct TodayView: View {
     let showDetail: @MainActor (Int) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.warmReduceTransparency) private var reduceTransparency
     @ScaledMetric(relativeTo: .largeTitle) private var heroTitle: CGFloat = 31
     @State private var scrollY: CGFloat = 0
 
@@ -62,10 +63,10 @@ struct TodayView: View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("跟练").font(.headline)
-                Text(docked ? plan.title : "弹性训练 · 居家哑铃")
+                Text(docked ? (typeSize.isAccessibilitySize ? heroTitleParts.title : plan.title) : "弹性训练 · 居家哑铃")
                     .font(.caption)
                     .foregroundStyle(Warm.secondary)
-                    .lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
+                    .lineLimit(typeSize.isAccessibilitySize ? nil : 1)
             }
             Spacer(minLength: 4)
             if docked {
@@ -78,7 +79,7 @@ struct TodayView: View {
         .padding(.horizontal, Warm.pageEdge)
         .padding(.vertical, 7)
         .background {
-            if docked {
+            if docked || (typeSize.isAccessibilitySize && reduceTransparency) {
                 Rectangle().fill(.clear)
                     .warmGlass(.elevated, in: Rectangle())
                     .ignoresSafeArea(edges: .top)
@@ -159,10 +160,12 @@ struct TodayView: View {
                     HStack {
                         WarmPrimaryButton(title: startTitle, icon: "play.fill", action: start).disabled(!canStart)
                         WarmGlassButton(title: "配重与休息", icon: "slider.horizontal.3", action: showSetup)
+                            .accessibilityIdentifier(AccessibilityID.Today.actionSetup)
                     }
                     VStack {
                         WarmPrimaryButton(title: startTitle, icon: "play.fill", action: start).disabled(!canStart)
                         WarmGlassButton(title: "配重与休息", icon: "slider.horizontal.3", fillsWidth: true, action: showSetup)
+                            .accessibilityIdentifier(AccessibilityID.Today.actionSetup)
                     }
                 }
                 HStack(spacing: 10) {

@@ -127,6 +127,7 @@ final class GenLianUITests: XCTestCase {
         XCTAssertLessThanOrEqual(app.scrollViews.firstMatch.frame.maxY, start.frame.minY)
         XCTAssertEqual(ready(AccessibilityID.Today.scope, in: app).label, "胸·背·腿·核")
         capture("13-accessibility-today", in: app)
+        _ = revealFully(AccessibilityID.Today.actionSetup, in: app.scrollViews.firstMatch, app: app)
         tap(AccessibilityID.Dock.archive, in: app)
         _ = ready(AccessibilityID.Record.historyTitle, in: app)
         _ = reveal(AccessibilityID.Record.empty, in: app)
@@ -135,16 +136,19 @@ final class GenLianUITests: XCTestCase {
         tap(AccessibilityID.Dock.start, in: app)
         tap(AccessibilityID.Player.prepare, in: app)
         let movement = AccessibilityID.Player.exercise("ex-floor-press")
-        _ = reveal(movement, in: app)
-        _ = reveal(AccessibilityID.Player.actionTime, in: app)
+        _ = revealFully(movement, in: app.scrollViews.firstMatch, app: app)
         XCTAssertTrue(ready(AccessibilityID.Player.complete, in: app).isHittable)
         capture("16-accessibility-player", in: app)
+        _ = revealFully(AccessibilityID.Player.actionTime, in: app.scrollViews.firstMatch, app: app)
         tap(AccessibilityID.Player.complete, in: app)
         tap(AccessibilityID.Player.enterRest, in: app)
         expectLabel(AccessibilityID.Rest.countdown, containing: "90", in: app)
         _ = reveal(AccessibilityID.Rest.timing, in: app)
         XCTAssertTrue(ready(AccessibilityID.Rest.finish, in: app).isHittable)
         capture("17-accessibility-rest", in: app)
+        let next = revealFully(AccessibilityID.Rest.next, in: app.scrollViews.firstMatch, app: app)
+        XCTAssertTrue(next.label.contains("俯身单臂哑铃划船"))
+        capture("17b-accessibility-rest-next", in: app)
         tap(AccessibilityID.Rest.finish, in: app)
         tap(AccessibilityID.Player.next, in: app)
         _ = reveal(AccessibilityID.Player.side("left"), in: app)
@@ -159,10 +163,13 @@ final class GenLianUITests: XCTestCase {
         verifySummaryBottom(in: app)
         capture("18-accessibility-summary-bottom", in: app)
         tap(AccessibilityID.Record.archive, in: app)
-        let featured = reveal(AccessibilityID.Record.latest, in: app)
+        let featured = revealFully(AccessibilityID.Record.latest, in: app.scrollViews.firstMatch, app: app)
         capture("19-accessibility-archived", in: app)
         featured.tap()
-        expectLabel(logged, containing: "实录 12 次", in: app, afterRevealing: true)
+        _ = ready(AccessibilityID.Record.detailTitle, in: app)
+        let record = revealFully(logged, in: app.scrollViews[AccessibilityID.Record.scroll], app: app)
+        XCTAssertTrue(record.label.contains("实录 12 次"))
+        capture("19a-accessibility-history-detail", in: app)
     }
 
     @MainActor
@@ -174,7 +181,8 @@ final class GenLianUITests: XCTestCase {
         let timer = ready(AccessibilityID.Player.actionTime, in: app)
         let started = clockSeconds(timer.label)
         waitForClockChange(timer)
-        XCTAssertGreaterThan(clockSeconds(timer.label), started)
+        let advanced = clockSeconds(timer.label)
+        XCTAssertGreaterThan(advanced, started)
         capture("20-shoulder-press-player", in: app)
 
         tap(AccessibilityID.Player.pause, in: app)
@@ -189,7 +197,8 @@ final class GenLianUITests: XCTestCase {
         tap(AccessibilityID.Player.resume, in: app)
         _ = ready(AccessibilityID.Player.actionTime, in: app)
         waitForClockChange(timer)
-        XCTAssertGreaterThan(clockSeconds(timer.label), frozen)
+        let resumed = clockSeconds(timer.label)
+        XCTAssertGreaterThan(resumed, frozen)
         tap(AccessibilityID.Player.complete, in: app)
         endWorkout(in: app)
         let duration = clockSeconds(ready(AccessibilityID.Record.duration, in: app).label)
@@ -197,7 +206,9 @@ final class GenLianUITests: XCTestCase {
         capture("22-real-clock-summary", in: app)
         tap(AccessibilityID.Record.archive, in: app)
         tap(AccessibilityID.Record.latest, in: app)
-        XCTAssertEqual(clockSeconds(ready(AccessibilityID.Record.duration, in: app).label), duration)
+        let archived = clockSeconds(ready(AccessibilityID.Record.duration, in: app).label)
+        XCTAssertEqual(archived, duration)
+        print("Real workout clock (seconds): action \(started) → \(advanced), frozen at \(frozen), resumed at \(resumed), archived \(archived).")
     }
 
     @MainActor
@@ -229,6 +240,33 @@ final class GenLianUITests: XCTestCase {
         XCTAssertTrue(last.label.contains("未完成"))
         XCTAssertEqual(archive.frame, position)
         XCTAssertTrue(archive.isHittable)
+    }
+
+    @MainActor
+    private func revealFully(
+        _ id: String, in scroll: XCUIElement, app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line
+    ) -> XCUIElement {
+        let target = element(id, in: app)
+        for _ in 0..<12 {
+            let viewport = scroll.frame
+            let travel: CGFloat
+            if target.exists {
+                let frame = target.frame
+                if viewport.contains(frame) && target.isHittable { return target }
+                travel = min(0.5, max(-0.5, (frame.midY - viewport.midY) / max(viewport.height, 1)))
+            } else {
+                travel = 0.5
+            }
+            let startY = travel >= 0 ? 0.75 : 0.25
+            let start = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: startY))
+            let end = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: startY - travel))
+            start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.2)
+        }
+        XCTAssertTrue(
+            target.exists && scroll.frame.contains(target.frame) && target.isHittable,
+            "Could not fully reveal \(id)\n\(app.debugDescription)", file: file, line: line
+        )
+        return target
     }
 
     @MainActor

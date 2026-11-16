@@ -3,6 +3,7 @@ enum AccessibilityID {
         static let title = "today.title"
         static let scope = "today.scope"
         static let setup = "today.setup"
+        static let actionSetup = "today.action-setup"
         static func exercise(_ id: String) -> String { "today.exercise.\(id)" }
         static func course(_ id: String) -> String { "today.course.\(id)" }
     }
@@ -48,6 +49,7 @@ enum AccessibilityID {
         static let add = "rest.add"
         static let subtract = "rest.subtract"
         static let finish = "rest.finish"
+        static let next = "rest.next"
     }
 
     enum Record {
