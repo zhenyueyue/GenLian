@@ -1,0 +1,94 @@
+name: iOS device package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: xcode-27
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Prepare output directories
+        run: |
+          mkdir -p "$RUNNER_TEMP/genlian-device-diagnostics" "$RUNNER_TEMP/genlian-device-package"
+          printf 'RESULTS=%s\nDERIVED_DATA=%s\nOUTPUT=%s\n' \
+            "$RUNNER_TEMP/genlian-device-diagnostics" "$RUNNER_TEMP/genlian-device-build" \
+            "$RUNNER_TEMP/genlian-device-package" >> "$GITHUB_ENV"
+
+      - name: Check out GenLian
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Record Apple toolchain and SDK
+        run: |
+          {
+            sw_vers
+            uname -m
+            git rev-parse HEAD
+            xcodebuild -version
+            xcodebuild -version -sdk iphoneos
+          } 2>&1 | tee "$RESULTS/toolchain.log"
+          test "$(uname -m)" = arm64
+          grep -E '^Xcode 27([.[:space:]]|$)' "$RESULTS/toolchain.log"
+
+      - name: Build unsigned arm64 Release for iPhoneOS
+        run: |
+          xcodebuild -project ios/GenLian.xcodeproj -scheme GenLian \
+            -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath "$DERIVED_DATA" ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$RESULTS/build.log"
+
+      - name: Package and test the IPA archive
+        run: |
+          app="$DERIVED_DATA/Build/Products/Release-iphoneos/GenLian.app"
+          stage="$RUNNER_TEMP/genlian-ipa-stage"
+          unpacked="$RUNNER_TEMP/genlian-ipa-unpacked"
+          ipa="$OUTPUT/GenLian-unsigned.ipa"
+          {
+            test -d "$app" &&
+            mkdir -p "$stage/Payload" "$unpacked" &&
+            ditto "$app" "$stage/Payload/GenLian.app" &&
+            ditto -c -k --norsrc --keepParent "$stage/Payload" "$ipa" &&
+            unzip -t "$ipa" &&
+            ditto -x -k "$ipa" "$unpacked" &&
+            diff -qr "$app" "$unpacked/Payload/GenLian.app" &&
+            echo "The extracted app has the same files and contents as the Xcode build."
+          } 2>&1 | tee "$RESULTS/ipa-layout.log"
+
+      - name: Verify the extracted device app
+        run: |
+          python3 .github/scripts/verify_device_package.py "$RUNNER_TEMP/genlian-ipa-unpacked" "$RESULTS" \
+            2>&1 | tee "$RESULTS/verification.log"
+          (cd "$OUTPUT" && shasum -a 256 GenLian-unsigned.ipa) | tee "$RESULTS/SHA-256.txt"
+          {
+            echo "Verified unsigned GenLian IPA for iPhoneOS arm64"
+            echo
+            echo 'Bundle ID `com.genlian.app` · Minimum iOS `26.0` · 13 image sets'
+            echo
+            printf 'SHA-256: `%s`\n' "$(cut -d ' ' -f 1 "$RESULTS/SHA-256.txt")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload verified unsigned IPA
+        uses: actions/upload-artifact@v7
+        with:
+          name: GenLian-unsigned
+          path: ${{ runner.temp }}/genlian-device-package/GenLian-unsigned.ipa
+          retention-days: 7
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload device build and verification diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: genlian-device-diagnostics-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/genlian-device-diagnostics
+          retention-days: 7
+          if-no-files-found: warn
