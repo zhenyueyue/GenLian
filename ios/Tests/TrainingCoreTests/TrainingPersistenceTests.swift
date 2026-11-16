@@ -28,7 +28,7 @@ struct TrainingPersistenceTests {
         try fixture.completeTarget()
         try fixture.enterRest()
         try fixture.tick(5)
-        try #require(fixture.send(.pause))
+        try #require(try fixture.send(.pause))
         try fixture.tick(7)
         try fixture.controller.enterBackground()
         fixture.clock.advance(20)
@@ -36,7 +36,7 @@ struct TrainingPersistenceTests {
         #expect(try fixture.current().rest?.actualSeconds == 5)
         #expect(try fixture.current().pausedSeconds == 27)
         #expect(try fixture.current().elapsedSeconds == 5)
-        try #require(fixture.send(.resume))
+        try #require(try fixture.send(.resume))
         try fixture.tick(15)
         #expect(try fixture.current().phase == .nextTransition)
         #expect(try fixture.current().countdownSeconds == 2)
@@ -114,11 +114,11 @@ struct TrainingPersistenceTests {
         let plan = try #require(BuiltInCatalog.load().first { $0.id == "recovery" })
         let original = try TrainingController(store: store, clock: clock)
         #expect(original.archive.history.isEmpty)
-        try #require(original.start(plan))
+        try #require(try original.start(plan))
         let started = try #require(original.archive.current)
-        try #require(original.send(.startPreparedAction(.prepare, started.position), for: started.id))
-        try #require(original.send(.complete(started.currentKey, SetResult(.seconds(28))), for: started.id))
-        try #require(original.send(.saveForLater, for: started.id))
+        try #require(try original.send(.startPreparedAction(.prepare, started.position), for: started.id))
+        try #require(try original.send(.complete(started.currentKey, SetResult(.seconds(28))), for: started.id))
+        try #require(try original.send(.saveForLater, for: started.id))
         clock.advance(500)
 
         let relaunched = try TrainingController(store: store, clock: clock)
@@ -128,8 +128,8 @@ struct TrainingPersistenceTests {
         #expect(restored.side == .right)
         #expect(restored.totals.holdSeconds == 28)
         #expect(restored.activitySeconds == 0)
-        try #require(relaunched.send(.resume, for: restored.id))
-        try #require(relaunched.send(.end, for: restored.id))
+        try #require(try relaunched.send(.resume, for: restored.id))
+        try #require(try relaunched.send(.end, for: restored.id))
 
         let summaryAfterRestart = try TrainingController(store: store, clock: clock)
         #expect(summaryAfterRestart.archive.current?.outcome == .partial)
@@ -152,7 +152,7 @@ struct TrainingPersistenceTests {
         #expect(fixture.store.saved.current?.loggedSets.isEmpty == true)
         #expect(try fixture.send(action))
         #expect(try !fixture.send(action))
-        try #require(fixture.send(.end))
+        try #require(try fixture.send(.end))
 
         fixture.store.failNextSave = true
         #expect(throws: SaveFailure.self) { try fixture.controller.archiveFinished(fixture.id) }
@@ -167,11 +167,11 @@ struct TrainingPersistenceTests {
         try fixture.startMove()
         let first = try fixture.current()
         try fixture.tick(4)
-        try #require(fixture.send(.pause))
-        try #require(fixture.send(.updateDraft(first.currentKey, SetDraft(
+        try #require(try fixture.send(.pause))
+        try #require(try fixture.send(.updateDraft(first.currentKey, SetDraft(
             measurement: .repetitions(9), load: .measuredPerDumbbell(grams: 3300)
         ))))
-        try #require(fixture.send(.saveForLater))
+        try #require(try fixture.send(.saveForLater))
         fixture.clock.advance(300)
         let reopened = try TrainingController(store: fixture.store, clock: fixture.clock)
         let current = try #require(reopened.archive.current)
@@ -179,15 +179,16 @@ struct TrainingPersistenceTests {
         #expect(!current.isPaused)
         #expect(current.currentActionSeconds == 4)
         #expect(current.currentResult == SetResult(.repetitions(9), load: .measuredPerDumbbell(grams: 3300)))
-        try #require(reopened.send(.resume, for: fixture.id))
-        try #require(reopened.send(.completeDraft(current.currentKey), for: fixture.id))
+        try #require(try reopened.send(.resume, for: fixture.id))
+        try #require(try reopened.send(.completeDraft(current.currentKey), for: fixture.id))
         #expect(reopened.archive.current?.loggedSets.first?.result == current.currentResult)
     }
 
     @Test func versionOneSnapshotsDecodeWithoutOptionalDraftFields() throws {
         let fixture = try WorkoutFixture()
         let plain = try JSONEncoder().encode(fixture.current())
-        var map = try #require(JSONSerialization.jsonObject(with: plain) as? [String: Any])
+        let object = try JSONSerialization.jsonObject(with: plain)
+        var map = try #require(object as? [String: Any])
         map.removeValue(forKey: "drafts")
         map.removeValue(forKey: "setActivity")
         map.removeValue(forKey: "defaultLoad")

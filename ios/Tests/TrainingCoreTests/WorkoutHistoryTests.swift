@@ -43,8 +43,8 @@ struct WorkoutHistoryTests {
         let fixture = try WorkoutFixture()
         try fixture.startMove()
         let left = try fixture.current().currentKey
-        try #require(fixture.send(.complete(left, SetResult(.seconds(17), effort: .hard))))
-        try #require(fixture.send(.end))
+        try #require(try fixture.send(.complete(left, SetResult(.seconds(17), effort: .hard))))
+        try #require(try fixture.send(.end))
         let report = try WorkoutReport(session: fixture.current())
         #expect(report.session.outcome == .partial)
         #expect(report.session.endReason == .endedByUser)
@@ -69,8 +69,8 @@ struct WorkoutHistoryTests {
         try fixture.startMove()
         try fixture.completeTarget()
         let right = try fixture.current().currentKey
-        try #require(fixture.send(.skipExercise(right)))
-        try #require(fixture.send(.end))
+        try #require(try fixture.send(.skipExercise(right)))
+        try #require(try fixture.send(.end))
         let report = try WorkoutReport(session: fixture.current())
         #expect(report.totals.skippedSets == 1)
         #expect(report.unfinishedSets == 4)
@@ -89,13 +89,13 @@ struct WorkoutHistoryTests {
         let clock = try TestClock(date: instant(year: 2026, month: 11, day: 5, hour: 8, timeZone: zone))
         let controller = try TrainingController(store: TestStore(), clock: clock)
         let complete = try finish(plan("strength-a"), using: controller, clock: clock, timeZone: zone)
-        try #require(controller.archiveFinished(complete.id))
+        try #require(try controller.archiveFinished(complete.id))
         clock.advance(3600)
         let partial = try endRecovery(using: controller, clock: clock, timeZone: zone, logFirstSide: true)
-        try #require(controller.archiveFinished(partial.id))
+        try #require(try controller.archiveFinished(partial.id))
         clock.advance(3600)
         let zero = try endRecovery(using: controller, clock: clock, timeZone: zone, logFirstSide: false)
-        try #require(controller.archiveFinished(zero.id))
+        try #require(try controller.archiveFinished(zero.id))
 
         let history = TrainingHistory(archive: controller.archive, legacyTimeZone: zone)
         let day = complete.trainingDay(fallback: zone)
@@ -125,9 +125,9 @@ struct WorkoutHistoryTests {
         let controller = try TrainingController(store: store, clock: clock)
         let going = try startRecovery(using: controller, timeZone: zone)
         clock.advance(20)
-        try #require(controller.send(.completeDraft(going.currentKey), for: going.id))
-        try #require(controller.send(.end, for: going.id))
-        try #require(controller.archiveFinished(going.id))
+        try #require(try controller.send(.completeDraft(going.currentKey), for: going.id))
+        try #require(try controller.send(.end, for: going.id))
+        try #require(try controller.archiveFinished(going.id))
         let reopened = try TrainingController(store: store, clock: clock)
         let record = try #require(reopened.archive.history.first)
         let recordedDay = record.trainingDay(fallback: viewer)
@@ -163,16 +163,16 @@ struct WorkoutHistoryTests {
         let fixture = try WorkoutFixture()
         try fixture.startMove()
         try fixture.completeTarget()
-        try #require(fixture.send(.saveForLater))
+        try #require(try fixture.send(.saveForLater))
         let resumed = try TrainingController(store: fixture.store, clock: fixture.clock)
-        try #require(resumed.send(.resume, for: fixture.id))
-        try #require(resumed.send(.end, for: fixture.id))
+        try #require(try resumed.send(.resume, for: fixture.id))
+        try #require(try resumed.send(.end, for: fixture.id))
         fixture.store.failNextSave = true
         #expect(throws: SaveFailure.self) { try resumed.archiveFinished(fixture.id) }
         #expect(resumed.archive.history.isEmpty)
         #expect(resumed.archive.current?.outcome == .partial)
         let restarted = try TrainingController(store: fixture.store, clock: fixture.clock)
-        try #require(restarted.archiveFinished(fixture.id))
+        try #require(try restarted.archiveFinished(fixture.id))
         #expect(try !restarted.archiveFinished(fixture.id))
 
         let reopened = try TrainingController(store: fixture.store, clock: fixture.clock)
@@ -193,7 +193,7 @@ struct WorkoutHistoryTests {
         let controller = try TrainingController(store: store, clock: clock)
         let existing = try plan("strength-a")
         let completed = try finish(existing, using: controller, clock: clock)
-        try #require(controller.archiveFinished(completed.id))
+        try #require(try controller.archiveFinished(completed.id))
         let replacement = WorkoutPlan(
             id: existing.id, category: existing.category, title: "新计划标题", subtitle: "",
             estimatedMinutesRange: "", rounds: 1, exerciseRestSeconds: 15, roundRestSeconds: 20,
@@ -201,7 +201,7 @@ struct WorkoutHistoryTests {
         )
         clock.advance(1800)
         let relaunched = try TrainingController(store: store, clock: clock)
-        try #require(relaunched.start(replacement))
+        try #require(try relaunched.start(replacement))
         let restored = try #require(relaunched.archive.history.first)
         #expect(restored == completed)
         #expect(restored.plan == existing)
@@ -233,21 +233,21 @@ struct WorkoutHistoryTests {
     private func finish(
         _ plan: WorkoutPlan, using controller: TrainingController, clock: TestClock, timeZone: TimeZone = .gmt
     ) throws -> WorkoutSession {
-        try #require(controller.start(plan, load: .measuredPerDumbbell(grams: 3300), timeZone: timeZone))
+        try #require(try controller.start(plan, load: .measuredPerDumbbell(grams: 3300), timeZone: timeZone))
         let id = try #require(controller.archive.current?.id)
         for _ in 0..<plan.plannedSetCount {
             var state = try #require(controller.archive.current)
             if state.phase == .setComplete {
                 let owner = try #require(state.restOwner)
-                try #require(controller.send(.startRest(owner), for: id))
-                try #require(controller.send(.finishRest(owner), for: id))
+                try #require(try controller.send(.startRest(owner), for: id))
+                try #require(try controller.send(.finishRest(owner), for: id))
                 state = try #require(controller.archive.current)
             }
             if state.phase == .prepare || state.phase == .nextTransition {
-                try #require(controller.send(.startPreparedAction(state.phase, state.position), for: id))
+                try #require(try controller.send(.startPreparedAction(state.phase, state.position), for: id))
             }
             clock.advance(state.currentExercise.target.unit == .seconds ? 18 : 2)
-            try #require(controller.send(.completeDraft(state.currentKey), for: id))
+            try #require(try controller.send(.completeDraft(state.currentKey), for: id))
         }
         let session = try #require(controller.archive.current)
         try #require(session.phase == .summary)
@@ -255,9 +255,9 @@ struct WorkoutHistoryTests {
     }
 
     private func startRecovery(using controller: TrainingController, timeZone: TimeZone) throws -> WorkoutSession {
-        try #require(controller.start(plan("recovery"), timeZone: timeZone))
+        try #require(try controller.start(try plan("recovery"), timeZone: timeZone))
         let session = try #require(controller.archive.current)
-        try #require(controller.send(.startPreparedAction(session.phase, session.position), for: session.id))
+        try #require(try controller.send(.startPreparedAction(session.phase, session.position), for: session.id))
         return session
     }
 
@@ -266,8 +266,8 @@ struct WorkoutHistoryTests {
     ) throws -> WorkoutSession {
         let started = try startRecovery(using: controller, timeZone: timeZone)
         clock.advance(logFirstSide ? 5 : 60)
-        if logFirstSide { try #require(controller.send(.completeDraft(started.currentKey), for: started.id)) }
-        try #require(controller.send(.end, for: started.id))
+        if logFirstSide { try #require(try controller.send(.completeDraft(started.currentKey), for: started.id)) }
+        try #require(try controller.send(.end, for: started.id))
         return try #require(controller.archive.current)
     }
 }

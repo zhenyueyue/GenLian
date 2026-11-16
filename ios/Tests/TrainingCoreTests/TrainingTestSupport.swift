@@ -52,7 +52,7 @@ struct WorkoutFixture {
         let testClock = TestClock()
         let testStore = TestStore()
         let training = try TrainingController(store: testStore, clock: testClock)
-        try #require(training.start(plan, rest: rest))
+        try #require(try training.start(plan, rest: rest))
         clock = testClock
         store = testStore
         controller = training
@@ -66,22 +66,22 @@ struct WorkoutFixture {
 
     func startMove() throws {
         let state = try current()
-        try #require(send(.startPreparedAction(state.phase, state.position)))
+        try #require(try send(.startPreparedAction(state.phase, state.position)))
     }
 
     func completeTarget() throws {
         let state = try current()
-        try #require(send(.complete(state.currentKey, SetResult(state.currentExercise.target))))
+        try #require(try send(.complete(state.currentKey, SetResult(state.currentExercise.target))))
     }
 
     func enterRest() throws {
         let owner = try #require(current().restOwner)
-        try #require(send(.startRest(owner)))
+        try #require(try send(.startRest(owner)))
     }
 
     func skipRest() throws {
         let owner = try #require(current().restOwner)
-        try #require(send(.finishRest(owner)))
+        try #require(try send(.finishRest(owner)))
     }
 
     func tick(_ seconds: TimeInterval, wallSeconds: TimeInterval? = nil) throws {
