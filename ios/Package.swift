@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "GenLianTraining",
-    platforms: [.iOS("26.0")],
+    platforms: [.iOS("26.0"), .macOS(.v13)],
     products: [.library(name: "TrainingCore", targets: ["TrainingCore"])],
     targets: [
         .target(name: "TrainingCore", resources: [.process("Resources")]),
