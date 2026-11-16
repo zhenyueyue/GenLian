@@ -1,0 +1,302 @@
+[
+  {
+    "id": "strength-a",
+    "category": "力量 A",
+    "title": "全身均衡循环（胸·背·腿·核）",
+    "subtitle": "初学者基础力量循环 · 覆盖上下肢与核心",
+    "estimatedMinutesRange": "34–42 分钟",
+    "rounds": 3,
+    "exerciseRestSeconds": 90,
+    "roundRestSeconds": 120,
+    "exercises": [
+      {
+        "id": "ex-floor-press",
+        "movementID": "ex-floor-press",
+        "name": "哑铃地板卧推",
+        "muscleGroup": "胸",
+        "targetMuscle": "胸大肌 · 肱三头肌 · 肩前束稳定",
+        "dumbbellCount": 2,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "3-1-1",
+        "coachingCue": "大臂呈 45 度缓慢下放轻触地面，呼气稳定向上推起",
+        "preparationCue": "仰卧屈膝踩实地面，双手稳定握持哑铃"
+      },
+      {
+        "id": "ex-single-row",
+        "movementID": "ex-single-row",
+        "name": "俯身单臂哑铃划船",
+        "muscleGroup": "背",
+        "targetMuscle": "背阔肌 · 中下斜方肌（单臂交替）",
+        "dumbbellCount": 1,
+        "unilateral": true,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "2-1-2",
+        "coachingCue": "非发力手撑稳支撑物，肘部贴近体侧向髋部拉起",
+        "preparationCue": "单臂动作 · 准备先完成左侧 12 次，再换右侧"
+      },
+      {
+        "id": "ex-goblet-squat",
+        "movementID": "ex-goblet-squat",
+        "name": "高脚杯哑铃深蹲",
+        "muscleGroup": "腿",
+        "targetMuscle": "股四头肌 · 臀大肌 · 躯干直立核心",
+        "dumbbellCount": 1,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "3-1-1",
+        "coachingCue": "双手托住单只哑铃贴近胸前，保持脊柱中立下蹲起立",
+        "preparationCue": "仅需单只哑铃置于胸前，双脚略宽于肩"
+      },
+      {
+        "id": "ex-dead-bug",
+        "movementID": "ex-dead-bug",
+        "name": "仰卧死虫式核心控制",
+        "muscleGroup": "核心",
+        "targetMuscle": "腹横肌深层 · 骨盆抗伸展稳定",
+        "dumbbellCount": 0,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "慢速控制",
+        "coachingCue": "下背部全程轻压垫面，呼气伸展对侧手脚，不要憋气",
+        "preparationCue": "放下哑铃平躺于垫上，膝盖屈曲 90 度抬起"
+      }
+    ]
+  },
+  {
+    "id": "strength-b",
+    "category": "力量 B",
+    "title": "肩背线条与腿后链",
+    "subtitle": "偏轻可控配重 · 兼顾肩部宽度与下肢后链",
+    "estimatedMinutesRange": "30–38 分钟",
+    "rounds": 3,
+    "exerciseRestSeconds": 90,
+    "roundRestSeconds": 120,
+    "exercises": [
+      {
+        "id": "ex-shoulder-press",
+        "movementID": "ex-shoulder-press",
+        "name": "站姿哑铃推举",
+        "muscleGroup": "肩",
+        "targetMuscle": "三角肌前中束 · 上肢垂直推力",
+        "dumbbellCount": 2,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 10
+          }
+        },
+        "tempo": "2-0-2",
+        "coachingCue": "肋骨下沉不顶腰，呼气垂直上推，下放至耳垂高度",
+        "preparationCue": "双脚与肩同宽站稳，保持躯干稳定"
+      },
+      {
+        "id": "ex-lateral-raise",
+        "movementID": "ex-lateral-raise",
+        "name": "控制式哑铃侧平举",
+        "muscleGroup": "肩",
+        "targetMuscle": "三角肌中束宽度 · 肩部轮廓",
+        "dumbbellCount": 2,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 14
+          }
+        },
+        "tempo": "2-1-3",
+        "coachingCue": "沉肩微前倾，手肘引导哑铃向两侧平举至与肩同高",
+        "preparationCue": "避免耸肩借力，重量宁轻勿重"
+      },
+      {
+        "id": "ex-rdl",
+        "movementID": "ex-rdl",
+        "name": "哑铃罗马尼亚硬拉",
+        "muscleGroup": "腿",
+        "targetMuscle": "腘绳肌 · 臀大肌 · 下背链条",
+        "dumbbellCount": 2,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "3-1-1",
+        "coachingCue": "屈髋向后推臀，哑铃贴近大腿前侧下放至小腿上端",
+        "preparationCue": "膝盖微屈锁定角度，全程保持背部平直"
+      },
+      {
+        "id": "ex-dead-bug-b",
+        "movementID": "ex-dead-bug",
+        "name": "仰卧死虫式核心控制",
+        "muscleGroup": "核心",
+        "targetMuscle": "腹横肌 · 腰椎稳定保护",
+        "dumbbellCount": 0,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "慢速控制",
+        "coachingCue": "随缓慢呼气伸展对侧手脚，保持下背紧贴地面",
+        "preparationCue": "放下哑铃平躺垫面，做每轮核心收尾"
+      }
+    ]
+  },
+  {
+    "id": "cardio",
+    "category": "有氧",
+    "title": "轻负重代谢循环",
+    "subtitle": "短间歇节奏流 · 提升心肺与热量代谢",
+    "estimatedMinutesRange": "20–26 分钟",
+    "rounds": 3,
+    "exerciseRestSeconds": 30,
+    "roundRestSeconds": 45,
+    "exercises": [
+      {
+        "id": "ex-goblet-cardio",
+        "movementID": "ex-goblet-squat",
+        "name": "高脚杯哑铃深蹲",
+        "muscleGroup": "腿",
+        "targetMuscle": "下肢大肌群 · 快速拉升心率",
+        "dumbbellCount": 1,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 14
+          }
+        },
+        "tempo": "1-0-1",
+        "coachingCue": "保持平稳呼吸节奏，蹲起动作连贯不停顿",
+        "preparationCue": "确认站姿稳定，保持动作连贯"
+      },
+      {
+        "id": "ex-row-cardio",
+        "movementID": "ex-single-row",
+        "name": "俯身单臂哑铃划船",
+        "muscleGroup": "背",
+        "targetMuscle": "背部耐力 · 单侧核心抗旋转",
+        "dumbbellCount": 1,
+        "unilateral": true,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 12
+          }
+        },
+        "tempo": "1-1-1",
+        "coachingCue": "核心收紧稳定躯干，有节奏地拉起哑铃",
+        "preparationCue": "单臂左右各 12 次，完成后进入 30 秒休息"
+      },
+      {
+        "id": "ex-floor-press-cardio",
+        "movementID": "ex-floor-press",
+        "name": "哑铃地板卧推",
+        "muscleGroup": "胸",
+        "targetMuscle": "胸部推力耐力",
+        "dumbbellCount": 2,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 14
+          }
+        },
+        "tempo": "1-0-1",
+        "coachingCue": "保持呼吸节奏，平稳向上推起后控速落回地面",
+        "preparationCue": "平躺垫面准备推举节奏"
+      },
+      {
+        "id": "ex-core-cardio",
+        "movementID": "ex-dead-bug",
+        "name": "仰卧死虫式核心控制",
+        "muscleGroup": "核心",
+        "targetMuscle": "核心肌耐力 · 心率过渡缓冲",
+        "dumbbellCount": 0,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 14
+          }
+        },
+        "tempo": "平稳控制",
+        "coachingCue": "用核心控制代替惯性，把呼吸节奏稳下来",
+        "preparationCue": "放下哑铃平躺垫面"
+      }
+    ]
+  },
+  {
+    "id": "recovery",
+    "category": "恢复日",
+    "title": "胸椎肩髋舒展恢复",
+    "subtitle": "正常周期恢复日 · 缓解僵硬并准备下次训练",
+    "estimatedMinutesRange": "12–16 分钟",
+    "rounds": 2,
+    "exerciseRestSeconds": 20,
+    "roundRestSeconds": 30,
+    "exercises": [
+      {
+        "id": "ex-thoracic",
+        "movementID": "ex-thoracic",
+        "name": "跪姿胸椎旋转伸展",
+        "muscleGroup": "恢复",
+        "targetMuscle": "胸椎旋转活动度 · 肩前侧打开",
+        "dumbbellCount": 0,
+        "unilateral": true,
+        "setsPerRound": 1,
+        "target": {
+          "seconds": {
+            "_0": 30
+          }
+        },
+        "tempo": "深慢呼吸",
+        "coachingCue": "随呼气缓慢向后旋转胸廓，骨盆保持朝前稳定",
+        "preparationCue": "单侧伸展 · 先从左侧开始 30 秒，再换右侧"
+      },
+      {
+        "id": "ex-dead-bug-rec",
+        "movementID": "ex-dead-bug",
+        "name": "仰卧死虫式呼吸激活",
+        "muscleGroup": "恢复",
+        "targetMuscle": "下背减压 · 深层核心温和唤醒",
+        "dumbbellCount": 0,
+        "unilateral": false,
+        "setsPerRound": 1,
+        "target": {
+          "repetitions": {
+            "_0": 10
+          }
+        },
+        "tempo": "慢速深呼吸",
+        "coachingCue": "配合腹式呼气缓慢延伸对侧手臂与腿部",
+        "preparationCue": "平躺放松肩颈，温和收尾本轮"
+      }
+    ]
+  }
+]

@@ -1,0 +1,198 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		26E000000000000000000001 /* GenLianApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000011 /* GenLianApp.swift */; };
+		26E000000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000012 /* Assets.xcassets */; };
+		26E000000000000000000003 /* TrainingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 26E000000000000000000061 /* TrainingCore */; };
+		26E000000000000000000080 /* TrainingAppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000070 /* TrainingAppModel.swift */; };
+		26E000000000000000000081 /* WarmDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000071 /* WarmDesign.swift */; };
+		26E000000000000000000082 /* WarmMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000072 /* WarmMedia.swift */; };
+		26E000000000000000000083 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000073 /* TodayView.swift */; };
+		26E000000000000000000084 /* WorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000074 /* WorkoutDetailView.swift */; };
+		26E000000000000000000085 /* TrainingSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000075 /* TrainingSetupView.swift */; };
+		26E000000000000000000086 /* WorkoutPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000076 /* WorkoutPlayerView.swift */; };
+		26E000000000000000000087 /* WorkoutRestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000077 /* WorkoutRestView.swift */; };
+		26E000000000000000000088 /* WorkoutReportViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000078 /* WorkoutReportViews.swift */; };
+		26E000000000000000000089 /* TrainingHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E000000000000000000079 /* TrainingHistoryView.swift */; };
+		26E00000000000000000008A /* TrainingMonthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E00000000000000000007A /* TrainingMonthView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		26E000000000000000000011 /* GenLianApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenLianApp.swift; sourceTree = "<group>"; };
+		26E000000000000000000012 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		26E000000000000000000013 /* GenLian.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GenLian.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		26E000000000000000000014 /* GenLian.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = GenLian.xcconfig; sourceTree = "<group>"; };
+		26E000000000000000000070 /* TrainingAppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingAppModel.swift; sourceTree = "<group>"; };
+		26E000000000000000000071 /* WarmDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarmDesign.swift; sourceTree = "<group>"; };
+		26E000000000000000000072 /* WarmMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarmMedia.swift; sourceTree = "<group>"; };
+		26E000000000000000000073 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		26E000000000000000000074 /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
+		26E000000000000000000075 /* TrainingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSetupView.swift; sourceTree = "<group>"; };
+		26E000000000000000000076 /* WorkoutPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPlayerView.swift; sourceTree = "<group>"; };
+		26E000000000000000000077 /* WorkoutRestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRestView.swift; sourceTree = "<group>"; };
+		26E000000000000000000078 /* WorkoutReportViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutReportViews.swift; sourceTree = "<group>"; };
+		26E000000000000000000079 /* TrainingHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingHistoryView.swift; sourceTree = "<group>"; };
+		26E00000000000000000007A /* TrainingMonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingMonthView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		26E000000000000000000021 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (26E000000000000000000003 /* TrainingCore in Frameworks */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		26E000000000000000000031 = {
+			isa = PBXGroup;
+			children = (26E000000000000000000032 /* GenLian */, 26E000000000000000000033 /* Products */,);
+			sourceTree = "<group>";
+		};
+		26E000000000000000000032 /* GenLian */ = {
+			isa = PBXGroup;
+			children = (26E000000000000000000011 /* GenLianApp.swift */, 26E000000000000000000012 /* Assets.xcassets */, 26E000000000000000000070 /* TrainingAppModel.swift */, 26E000000000000000000071 /* WarmDesign.swift */, 26E000000000000000000072 /* WarmMedia.swift */, 26E000000000000000000073 /* TodayView.swift */, 26E000000000000000000074 /* WorkoutDetailView.swift */, 26E000000000000000000075 /* TrainingSetupView.swift */, 26E000000000000000000076 /* WorkoutPlayerView.swift */, 26E000000000000000000077 /* WorkoutRestView.swift */, 26E000000000000000000078 /* WorkoutReportViews.swift */, 26E000000000000000000079 /* TrainingHistoryView.swift */, 26E00000000000000000007A /* TrainingMonthView.swift */, 26E000000000000000000014 /* GenLian.xcconfig */,);
+			path = GenLian;
+			sourceTree = "<group>";
+		};
+		26E000000000000000000033 /* Products */ = {
+			isa = PBXGroup;
+			children = (26E000000000000000000013 /* GenLian.app */,);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		26E000000000000000000040 /* GenLian */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 26E000000000000000000053 /* Build configuration list for PBXNativeTarget "GenLian" */;
+			buildPhases = (26E000000000000000000022 /* Sources */, 26E000000000000000000021 /* Frameworks */, 26E000000000000000000023 /* Resources */,);
+			buildRules = ();
+			dependencies = ();
+			name = GenLian;
+			packageProductDependencies = (26E000000000000000000061 /* TrainingCore */,);
+			productName = GenLian;
+			productReference = 26E000000000000000000013 /* GenLian.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		26E000000000000000000041 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+			};
+			buildConfigurationList = 26E000000000000000000052 /* Build configuration list for PBXProject "GenLian" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = ("zh-Hans", en, Base,);
+			mainGroup = 26E000000000000000000031;
+			packageReferences = (26E000000000000000000060 /* XCLocalSwiftPackageReference "." */,);
+			productRefGroup = 26E000000000000000000033 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (26E000000000000000000040 /* GenLian */,);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		26E000000000000000000023 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (26E000000000000000000002 /* Assets.xcassets in Resources */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		26E000000000000000000022 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (26E000000000000000000001 /* GenLianApp.swift in Sources */, 26E00000000000000000008A /* TrainingMonthView.swift in Sources */, 26E000000000000000000089 /* TrainingHistoryView.swift in Sources */, 26E000000000000000000088 /* WorkoutReportViews.swift in Sources */, 26E000000000000000000087 /* WorkoutRestView.swift in Sources */, 26E000000000000000000086 /* WorkoutPlayerView.swift in Sources */, 26E000000000000000000085 /* TrainingSetupView.swift in Sources */, 26E000000000000000000084 /* WorkoutDetailView.swift in Sources */, 26E000000000000000000083 /* TodayView.swift in Sources */, 26E000000000000000000082 /* WarmMedia.swift in Sources */, 26E000000000000000000081 /* WarmDesign.swift in Sources */, 26E000000000000000000080 /* TrainingAppModel.swift in Sources */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		26E000000000000000000050 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		26E000000000000000000051 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		26E000000000000000000054 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 26E000000000000000000014 /* GenLian.xcconfig */;
+			buildSettings = {};
+			name = Debug;
+		};
+		26E000000000000000000055 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 26E000000000000000000014 /* GenLian.xcconfig */;
+			buildSettings = {};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		26E000000000000000000052 /* Build configuration list for PBXProject "GenLian" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (26E000000000000000000050 /* Debug */, 26E000000000000000000051 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		26E000000000000000000053 /* Build configuration list for PBXNativeTarget "GenLian" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (26E000000000000000000054 /* Debug */, 26E000000000000000000055 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		26E000000000000000000060 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ".";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		26E000000000000000000061 /* TrainingCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 26E000000000000000000060 /* XCLocalSwiftPackageReference "." */;
+			productName = TrainingCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 26E000000000000000000041 /* Project object */;
+}

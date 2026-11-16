@@ -1,0 +1,6 @@
+{
+  "name": "跟练 · iOS 视觉探索",
+  "description": "面向 iPhone 15 Pro Max 原生 SwiftUI 健身应用「跟练」的三套差异化视觉方案与交互原型探索",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

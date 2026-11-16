@@ -1,0 +1,24 @@
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Xcode and SwiftPM user state and build output
+DerivedData/
+.build/
+.swiftpm/
+build/
+xcuserdata/
+*.xcuserstate
+*.xcarchive/
+*.ipa
+
+# Local web preview and AI Studio caches
+node_modules/
+dist/
+coverage/
+prototype/.aistudio/
+*.log
+.env*
+!.env.example

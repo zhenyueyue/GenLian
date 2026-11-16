@@ -1,0 +1,135 @@
+name: iOS native CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: xcode-27
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: bash
+    env:
+      XCODE_PROJECT: ios/GenLian.xcodeproj
+      XCODE_SCHEME: GenLian
+
+    steps:
+      - name: Prepare diagnostics
+        run: |
+          mkdir -p "$RUNNER_TEMP/genlian-ci"
+          printf 'CI_RESULTS=%s\nDERIVED_DATA=%s\n' \
+            "$RUNNER_TEMP/genlian-ci" "$RUNNER_TEMP/genlian-derived-data" >> "$GITHUB_ENV"
+
+      - name: Check out GenLian
+        id: checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Record the actual Apple toolchain
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: |
+          {
+            sw_vers
+            uname -m
+            git rev-parse HEAD
+            xcode-select --print-path
+            xcodebuild -version
+            swift --version
+            xcodebuild -showsdks
+            xcrun simctl list runtimes
+          } 2>&1 | tee "$CI_RESULTS/toolchain.log"
+          grep -E '^Xcode 27([.[:space:]]|$)' "$CI_RESULTS/toolchain.log"
+          test "$(uname -m)" = arm64
+
+      - name: Compile and test TrainingCore
+        id: core
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: |
+          swift test --package-path ios --xunit-output="$CI_RESULTS/training-core.xml" \
+            2>&1 | tee "$CI_RESULTS/training-core.log"
+
+      - name: Report the recorded Swift test counts
+        if: ${{ !cancelled() && (steps.core.outcome == 'success' || steps.core.outcome == 'failure') }}
+        env:
+          CORE_OUTCOME: ${{ steps.core.outcome }}
+        run: |
+          python3 .github/scripts/ios_ci.py tests "$CI_RESULTS" "$CORE_OUTCOME"
+
+      - name: Discover schemes and compatible iPhone simulators
+        id: simulator
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: |
+          xcodebuild -project "$XCODE_PROJECT" -list 2>&1 | tee "$CI_RESULTS/schemes.log"
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showdestinations \
+            2>&1 | tee "$CI_RESULTS/destinations.log"
+          xcrun simctl list devices available --json \
+            > "$CI_RESULTS/simulators.json" 2> "$CI_RESULTS/simulators.stderr.log"
+          python3 .github/scripts/ios_ci.py simulator "$CI_RESULTS" \
+            "$XCODE_PROJECT/xcshareddata/xcschemes/$XCODE_SCHEME.xcscheme" \
+            2>&1 | tee "$CI_RESULTS/simulator-selection.log"
+
+      - name: Build GenLian for iOS Simulator
+        id: app
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: |
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
+            -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$DERIVED_DATA" -resultBundlePath "$CI_RESULTS/GenLian-build.xcresult" \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$CI_RESULTS/GenLian-build.log"
+
+      - name: Verify packaged app resources
+        if: ${{ !cancelled() && steps.app.outcome == 'success' }}
+        run: |
+          python3 .github/scripts/ios_ci.py resources "$CI_RESULTS" \
+            "$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$XCODE_SCHEME.app" \
+            2>&1 | tee "$CI_RESULTS/resources.log"
+
+      - name: Run configured iOS simulator tests
+        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' && steps.simulator.outputs.has_tests == 'true' }}
+        timeout-minutes: 12
+        env:
+          DEVICE: ${{ steps.simulator.outputs.device }}
+        run: |
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
+            -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" \
+            -derivedDataPath "$DERIVED_DATA" -resultBundlePath "$CI_RESULTS/GenLian-test.xcresult" \
+            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$CI_RESULTS/GenLian-test.log"
+
+      - name: Install and launch GenLian in the simulator
+        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' }}
+        timeout-minutes: 8
+        env:
+          DEVICE: ${{ steps.simulator.outputs.device }}
+        run: |
+          {
+            app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$XCODE_SCHEME.app"
+            bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+            xcrun simctl bootstatus "$DEVICE" -b
+            xcrun simctl install "$DEVICE" "$app"
+            xcrun simctl launch "$DEVICE" "$bundle_id" | tee "$CI_RESULTS/simulator-launch.log"
+            pid=$(awk '/: [0-9]+$/ { print $NF; exit }' "$CI_RESULTS/simulator-launch.log")
+            test -n "$pid"
+            sleep 5
+            if ! ps -p "$pid" -o pid=,command=; then
+              xcrun simctl spawn "$DEVICE" log show --last 2m --style compact \
+                --predicate "process == \"$XCODE_SCHEME\"" || true
+              echo "GenLian exited after launch."
+              exit 1
+            fi
+            echo "GenLian remained running after the startup wait."
+            xcrun simctl io "$DEVICE" screenshot "$CI_RESULTS/GenLian-smoke.png"
+          } 2>&1 | tee "$CI_RESULTS/simulator-smoke.log"
+
+      - name: Upload iOS CI diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: genlian-ios-ci-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/genlian-ci
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,572 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', 'PingFang SC', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+.font-display-a {
+  font-family: 'Barlow Condensed', 'PingFang SC', 'Noto Sans SC', sans-serif;
+}
+
+.font-display-b {
+  font-family: 'Outfit', 'PingFang SC', 'Noto Sans SC', sans-serif;
+}
+
+.font-display-c {
+  font-family: 'Fraunces', 'Noto Serif SC', 'Songti SC', serif;
+}
+
+.font-editorial-serif {
+  font-family: 'Fraunces', 'Noto Serif SC', 'Songti SC', serif;
+}
+
+.font-editorial-sans {
+  font-family: 'Plus Jakarta Sans', 'PingFang SC', 'Noto Sans SC', sans-serif;
+}
+
+.font-precision-sans {
+  font-family: 'Manrope', 'PingFang SC', 'Noto Sans SC', sans-serif;
+}
+
+.font-precision-mono {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle scrollbars inside iPhone frames */
+.iphone-scroll::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+.iphone-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* =========================================================
+ * Web Simulation of Apple Liquid Glass (Active Stage Controls Only)
+ * Restrained clear optical tint + high saturation/brightness sampling
+ * + fine grazing edge catchlight (zero plastic gradients or heavy glow)
+ * ========================================================= */
+
+.lg-optical-pill {
+  position: relative;
+  background-color: rgba(18, 21, 26, 0.22);
+  -webkit-backdrop-filter: blur(20px) saturate(185%) brightness(1.12) contrast(1.04);
+  backdrop-filter: blur(20px) saturate(185%) brightness(1.12) contrast(1.04);
+  box-shadow:
+    inset 0 0.75px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.08),
+    0 6px 20px -6px rgba(0, 0, 0, 0.34);
+  transition:
+    background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lg-optical-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 0.6px;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.07) 36%,
+    rgba(255, 255, 255, 0.02) 70%,
+    rgba(255, 255, 255, 0.14) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.lg-optical-interactive:hover {
+  background-color: rgba(28, 32, 40, 0.28);
+  box-shadow:
+    inset 0 0.75px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.1),
+    0 8px 22px -6px rgba(0, 0, 0, 0.38);
+}
+
+.lg-optical-interactive:active {
+  transform: scale(0.955);
+  background-color: rgba(38, 44, 54, 0.34);
+}
+
+/* Accessibility overrides */
+.lg-a11y-reduce-transparency .lg-optical-pill {
+  background-color: rgba(20, 23, 28, 0.92);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.lg-a11y-increase-contrast .lg-optical-pill {
+  background-color: rgba(14, 16, 20, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    0 6px 18px -6px rgba(0, 0, 0, 0.55);
+}
+
+.lg-a11y-increase-contrast .lg-optical-pill::before {
+  opacity: 0;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .lg-optical-pill {
+    background-color: rgba(20, 23, 28, 0.92);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-optical-pill {
+    transition: none;
+  }
+}
+
+/* =========================================================
+ * Warm Performance · iOS 26 Liquid Glass Material System
+ * Layered Architecture: Warm Mineral Canvas + Translucent Glass
+ * + Grazing Specular Rim (::before) + Soft Ambient Float Shadow
+ * ========================================================= */
+
+@layer components {
+  .warm-lg-dock {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.40) 0%,
+      rgba(252, 249, 243, 0.24) 48%,
+      rgba(255, 254, 251, 0.36) 100%
+    );
+    -webkit-backdrop-filter: blur(13px) saturate(205%) contrast(1.04) brightness(1.12);
+    backdrop-filter: blur(13px) saturate(205%) contrast(1.04) brightness(1.12);
+    box-shadow:
+      inset 0 2px 5px rgba(255, 255, 255, 0.82),
+      inset 0 -2px 5px rgba(255, 255, 255, 0.46),
+      inset 0 0 18px rgba(255, 255, 255, 0.24),
+      0 0 0 0.5px rgba(25, 29, 34, 0.08),
+      0 14px 36px -10px rgba(25, 29, 34, 0.16),
+      0 3px 10px -2px rgba(25, 29, 34, 0.05);
+    transition:
+      background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .warm-lg-dock::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.25px;
+    background: linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(228, 244, 255, 0.65) 18%,
+      rgba(255, 255, 255, 0.18) 44%,
+      rgba(255, 255, 255, 0.08) 68%,
+      rgba(255, 238, 220, 0.55) 86%,
+      rgba(255, 255, 255, 0.88) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .warm-lg-dock::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.48) 0%,
+      rgba(255, 255, 255, 0.12) 22%,
+      rgba(255, 255, 255, 0) 48%,
+      rgba(255, 255, 255, 0.04) 80%,
+      rgba(255, 255, 255, 0.24) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .warm-lg-active-pill {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 253, 249, 0.56) 54%,
+      rgba(255, 255, 255, 0.74) 100%
+    );
+    box-shadow:
+      inset 0 1.5px 1.5px rgba(255, 255, 255, 1),
+      inset 0 -1px 1.5px rgba(25, 29, 34, 0.05),
+      0 0 0 0.5px rgba(25, 29, 34, 0.06),
+      0 4px 12px -2px rgba(25, 29, 34, 0.12),
+      0 1px 3px rgba(25, 29, 34, 0.06);
+  }
+
+  .warm-lg-control {
+    position: relative;
+    background: linear-gradient(
+      172deg,
+      rgba(255, 255, 255, 0.34) 0%,
+      rgba(250, 246, 239, 0.18) 52%,
+      rgba(255, 253, 249, 0.30) 100%
+    );
+    -webkit-backdrop-filter: blur(14px) saturate(200%) contrast(1.05) brightness(1.04);
+    backdrop-filter: blur(14px) saturate(200%) contrast(1.05) brightness(1.04);
+    box-shadow:
+      inset 0 1.5px 2px rgba(255, 255, 255, 0.92),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.36),
+      0 0 0 0.5px rgba(25, 29, 34, 0.08),
+      0 8px 22px -6px rgba(25, 29, 34, 0.15);
+    transition:
+      transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .warm-lg-control::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(232, 244, 255, 0.55) 22%,
+      rgba(255, 255, 255, 0.18) 46%,
+      rgba(255, 255, 255, 0.08) 72%,
+      rgba(255, 255, 255, 0.72) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .warm-lg-control-elevated {
+    position: relative;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 253, 249, 0.80) 0%,
+      rgba(249, 245, 237, 0.68) 100%
+    );
+    -webkit-backdrop-filter: blur(22px) saturate(175%) brightness(1.04);
+    backdrop-filter: blur(22px) saturate(175%) brightness(1.04);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.96),
+      inset 0 -1px 1px rgba(25, 29, 34, 0.05),
+      0 0 0 0.75px rgba(25, 29, 34, 0.08),
+      0 10px 26px -8px rgba(25, 29, 34, 0.24);
+    transition:
+      transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .warm-lg-control-elevated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 255, 255, 0.35) 42%,
+      rgba(255, 255, 255, 0.62) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .warm-lg-interactive:hover {
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.98),
+      inset 0 -1px 1px rgba(25, 29, 34, 0.05),
+      0 0 0 0.75px rgba(25, 29, 34, 0.11),
+      0 10px 26px -8px rgba(25, 29, 34, 0.2);
+  }
+
+  .warm-lg-interactive:active {
+    transform: scale(0.96);
+  }
+
+  .warm-lg-chip {
+    position: relative;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 253, 249, 0.58) 0%,
+      rgba(247, 242, 234, 0.44) 100%
+    );
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.90),
+      inset 0 -0.5px 0 rgba(25, 29, 34, 0.04),
+      0 0 0 0.75px rgba(25, 29, 34, 0.075),
+      0 4px 14px -4px rgba(25, 29, 34, 0.10);
+    transition:
+      transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .warm-lg-chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 0.75px;
+    background: linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 255, 255, 0.24) 42%,
+      rgba(255, 255, 255, 0.06) 72%,
+      rgba(255, 255, 255, 0.52) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .warm-lg-header-blur {
+    background: linear-gradient(
+      180deg,
+      rgba(252, 249, 243, 0.68) 0%,
+      rgba(249, 247, 243, 0.54) 100%
+    );
+    -webkit-backdrop-filter: blur(22px) saturate(175%);
+    backdrop-filter: blur(22px) saturate(175%);
+    border-bottom: 1px solid rgba(25, 29, 34, 0.08);
+    box-shadow:
+      inset 0 -1px 0 rgba(255, 255, 255, 0.62),
+      0 8px 24px -10px rgba(25, 29, 34, 0.09);
+  }
+
+  .warm-lg-dim-control {
+    position: relative;
+    background: linear-gradient(
+      168deg,
+      rgba(24, 28, 34, 0.44) 0%,
+      rgba(20, 24, 30, 0.30) 54%,
+      rgba(28, 33, 40, 0.40) 100%
+    );
+    -webkit-backdrop-filter: blur(16px) saturate(185%) brightness(0.96);
+    backdrop-filter: blur(16px) saturate(185%) brightness(0.96);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.58),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.18),
+      0 0 0 0.75px rgba(255, 255, 255, 0.24),
+      0 8px 24px -8px rgba(15, 18, 22, 0.32);
+    transition:
+      transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .warm-lg-dim-control::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.82) 0%,
+      rgba(255, 255, 255, 0.18) 42%,
+      rgba(255, 255, 255, 0.06) 72%,
+      rgba(255, 255, 255, 0.46) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .warm-lg-dim-control:hover {
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.78),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.12),
+      0 0 0 0.75px rgba(255, 255, 255, 0.34),
+      0 10px 26px -8px rgba(15, 18, 22, 0.32);
+  }
+
+  .warm-lg-dim-control:active {
+    transform: scale(0.96);
+  }
+
+  .warm-lg-rest-card {
+    position: relative;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 253, 249, 0.72) 0%,
+      rgba(249, 246, 239, 0.58) 100%
+    );
+    -webkit-backdrop-filter: blur(22px) saturate(170%) brightness(1.06);
+    backdrop-filter: blur(22px) saturate(170%) brightness(1.06);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.92),
+      inset 0 -1px 0 rgba(25, 29, 34, 0.05),
+      0 0 0 0.75px rgba(255, 255, 255, 0.45),
+      0 18px 40px -12px rgba(15, 18, 22, 0.26);
+  }
+
+  .warm-lg-rest-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(255, 255, 255, 0.28) 45%,
+      rgba(255, 255, 255, 0.52) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .warm-lg-sheet {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      rgba(252, 250, 245, 0.84) 0%,
+      rgba(249, 247, 243, 0.92) 100%
+    );
+    -webkit-backdrop-filter: blur(24px) saturate(165%);
+    backdrop-filter: blur(24px) saturate(165%);
+    border-top: 1px solid rgba(255, 255, 255, 0.82);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.94),
+      0 -14px 40px -12px rgba(25, 29, 34, 0.16);
+  }
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .warm-lg-dock,
+  .warm-lg-control,
+  .warm-lg-control-elevated,
+  .warm-lg-chip,
+  .warm-lg-header-blur,
+  .warm-lg-rest-card,
+  .warm-lg-sheet {
+    background: rgba(249, 247, 243, 0.95);
+  }
+  .warm-lg-dim-control {
+    background: rgba(38, 43, 50, 0.86);
+  }
+}
+
+/* Reduced transparency accessibility (OS preference + App toggle) */
+@media (prefers-reduced-transparency: reduce) {
+  .warm-lg-dock,
+  .warm-lg-control,
+  .warm-lg-control-elevated,
+  .warm-lg-chip,
+  .warm-lg-header-blur,
+  .warm-lg-rest-card,
+  .warm-lg-sheet {
+    background: rgba(249, 247, 243, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .warm-lg-dim-control {
+    background: rgba(34, 39, 46, 0.88);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .warm-lg-dock::after {
+    opacity: 0;
+  }
+}
+
+.lg-a11y-reduce-transparency .warm-lg-dock,
+.lg-a11y-reduce-transparency .warm-lg-control,
+.lg-a11y-reduce-transparency .warm-lg-control-elevated,
+.lg-a11y-reduce-transparency .warm-lg-chip,
+.lg-a11y-reduce-transparency .warm-lg-header-blur,
+.lg-a11y-reduce-transparency .warm-lg-rest-card,
+.lg-a11y-reduce-transparency .warm-lg-sheet {
+  background: rgba(249, 247, 243, 0.96);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.lg-a11y-reduce-transparency .warm-lg-dock::after {
+  opacity: 0;
+}
+
+.lg-a11y-reduce-transparency .warm-lg-dim-control {
+  background: rgba(34, 39, 46, 0.88);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.lg-a11y-increase-contrast .warm-lg-dock,
+.lg-a11y-increase-contrast .warm-lg-control,
+.lg-a11y-increase-contrast .warm-lg-control-elevated,
+.lg-a11y-increase-contrast .warm-lg-chip,
+.lg-a11y-increase-contrast .warm-lg-rest-card {
+  box-shadow:
+    inset 0 0 0 1px rgba(25, 29, 34, 0.24),
+    0 8px 22px -6px rgba(25, 29, 34, 0.18);
+  background: rgba(252, 250, 246, 0.92);
+}
+
+.lg-a11y-increase-contrast .warm-lg-dim-control {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.56),
+    0 8px 24px -8px rgba(15, 18, 22, 0.34);
+  background: rgba(25, 29, 34, 0.62);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .warm-lg-dock,
+  .warm-lg-control,
+  .warm-lg-control-elevated,
+  .warm-lg-dim-control {
+    transition: none;
+  }
+}
+
