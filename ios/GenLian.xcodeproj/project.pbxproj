@@ -34,6 +34,7 @@
 		26E0000000000000000000B7 /* TrainingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A2 /* TrainingActivityAttributes.swift */; };
 		26E0000000000000000000B8 /* GenLianWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A7 /* GenLianWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		26E0000000000000000000B9 /* TrainingCoach in Frameworks */ = {isa = PBXBuildFile; productRef = 26E0000000000000000000C7 /* TrainingCoach */; };
+		26E0000000000000000000BA /* RestActivityPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A8 /* RestActivityPresentation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,6 +94,7 @@
 		26E0000000000000000000A5 /* VoiceCoachSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCoachSettingsView.swift; sourceTree = "<group>"; };
 		26E0000000000000000000A6 /* TrainingLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingLiveActivityWidget.swift; sourceTree = "<group>"; };
 		26E0000000000000000000A7 /* GenLianWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GenLianWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		26E0000000000000000000A8 /* RestActivityPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TrainingCoach/RestActivityPresentation.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,7 +132,7 @@
 		};
 		26E000000000000000000035 /* GenLianWidget */ = {
 			isa = PBXGroup;
-			children = (26E0000000000000000000A6 /* TrainingLiveActivityWidget.swift */,);
+			children = (26E0000000000000000000A6 /* TrainingLiveActivityWidget.swift */, 26E0000000000000000000A8 /* RestActivityPresentation.swift */,);
 			path = GenLianWidget;
 			sourceTree = "<group>";
 		};
@@ -223,7 +225,7 @@
 		26E0000000000000000000C3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (26E0000000000000000000B6 /* TrainingLiveActivityWidget.swift in Sources */, 26E0000000000000000000B7 /* TrainingActivityAttributes.swift in Sources */,);
+			files = (26E0000000000000000000B6 /* TrainingLiveActivityWidget.swift in Sources */, 26E0000000000000000000B7 /* TrainingActivityAttributes.swift in Sources */, 26E0000000000000000000BA /* RestActivityPresentation.swift in Sources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

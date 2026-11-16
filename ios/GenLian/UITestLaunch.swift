@@ -10,6 +10,13 @@ enum UITestLaunch {
         identifier != nil && ProcessInfo.processInfo.environment["GENLIAN_UI_TEST_ACCESSIBILITY"] == "1"
     }
 
+    static var activityTestRest: RestSettings? {
+        guard identifier != nil,
+              let mode = ProcessInfo.processInfo.environment["GENLIAN_UI_TEST_REST_MODE"],
+              mode == "auto" || mode == "manual" else { return nil }
+        return RestSettings(exerciseSeconds: 24, roundSeconds: 24, autoAdvance: mode == "auto")
+    }
+
     static func preferences() -> UserDefaults {
         guard let identifier else { return .standard }
         guard let isolated = UserDefaults(suiteName: "com.genlian.app.uitest.\(identifier.uuidString)") else {

@@ -18,13 +18,72 @@ struct CoachPolicyTests {
     @Test func confirmedSetCanPrepareAudioBeforeRestWithoutSchedulingEarly() throws {
         let training = try CoachFixture()
         try training.send(.startPreparedAction(.prepare, training.session.position))
-        #expect(CoachPolicy.upcomingRestSpeech(training.session) == nil)
+        let prewarmed = CoachPolicy.upcomingRestSpeech(training.session)
+        #expect(prewarmed?.contains("俯身单臂哑铃划船") == true)
+        #expect(CoachPolicy.reminder(for: training.session, previous: nil, now: training.clock.date) == nil)
         try training.send(.complete(training.session.currentKey, .init(.repetitions(12))))
         let message = CoachPolicy.upcomingRestSpeech(training.session)
-        #expect(message?.contains("俯身单臂哑铃划船") == true)
+        #expect(message == prewarmed)
         #expect(CoachPolicy.reminder(for: training.session, previous: nil, now: training.clock.date) == nil)
         try training.send(.startRest(try #require(training.session.restOwner)))
         #expect(CoachPolicy.reminder(for: training.session, previous: nil, now: training.clock.date)?.phrase == message)
+    }
+
+    @Test func notificationUsesOnlyVerifiedAudioOrExplicitFailure() throws {
+        let training = try CoachFixture()
+        try training.startRest()
+        let now = training.clock.date
+        let reminder = try #require(CoachPolicy.reminder(for: training.session, previous: nil, now: now))
+        func request(_ audio: RestNotificationRequest.Audio, permitted: Bool = true, sound: Bool = true) -> RestNotificationRequest? {
+            .resolve(reminder, permitted: permitted, soundEnabled: sound, audio: audio, now: now)
+        }
+        #expect(request(.waiting) == nil)
+        #expect(request(.failed)?.sound == .systemDefault)
+        #expect(request(.verified("next.caf"))?.sound == .speech("next.caf"))
+        #expect(request(.verified("next.caf")) == request(.verified("next.caf")))
+        #expect(request(.verified("next.caf"), permitted: false) == nil)
+        #expect(request(.waiting, sound: false)?.sound == .silent)
+        #expect(RestNotificationRequest.resolve(reminder, permitted: true, soundEnabled: true,
+                                               audio: .verified("next.caf"), now: reminder.deadline) == nil)
+    }
+
+    @Test func lateAudioFollowsTheCurrentDeadlineAndNeverRecreatesCancelledRest() throws {
+        let training = try CoachFixture()
+        try training.startRest()
+        let now = training.clock.date
+        let first = try #require(CoachPolicy.reminder(for: training.session, previous: nil, now: now))
+        let owner = try #require(training.session.restOwner)
+        func request(_ reminder: RestReminder?) -> RestNotificationRequest? {
+            .resolve(reminder, permitted: true, soundEnabled: true, audio: .verified("next.caf"), now: training.clock.date)
+        }
+        try training.send(.adjustRest(owner, .addFifteen))
+        let later = CoachPolicy.reminder(for: training.session, previous: first, now: now)
+        #expect(request(later) != request(first))
+        #expect(request(later)?.reminder.phrase == first.phrase)
+        try training.send(.adjustRest(owner, .subtractFifteen))
+        #expect(request(CoachPolicy.reminder(for: training.session, previous: later, now: now)) == request(first))
+        try training.send(.pause)
+        #expect(request(CoachPolicy.reminder(for: training.session, previous: first, now: now)) == nil)
+        try training.advance(3)
+        try training.send(.resume)
+        let resumed = CoachPolicy.reminder(for: training.session, previous: nil, now: training.clock.date)
+        #expect(request(resumed)?.reminder.deadline == first.deadline + 3)
+        try training.send(.finishRest(owner))
+        #expect(request(CoachPolicy.reminder(for: training.session, previous: resumed, now: training.clock.date)) == nil)
+        try training.send(.end)
+        #expect(request(CoachPolicy.reminder(for: training.session, previous: resumed, now: training.clock.date)) == nil)
+    }
+
+    @Test(arguments: [true, false]) func expiredActivityProjectsTheNextRoundWithoutStartingAnAction(autoAdvance: Bool) {
+        let deadline = Date(timeIntervalSince1970: 1_800_000_000)
+        let expected = RestActivityPresentation.next(exercise: "高脚杯深蹲", round: 2, waitsForConfirmation: !autoAdvance)
+        func display(at date: Date, stale: Bool = false) -> RestActivityPresentation {
+            .resolve(deadline: deadline, isStale: stale, now: date, nextExercise: "高脚杯深蹲", nextRound: 2, autoAdvance: autoAdvance)
+        }
+        #expect(display(at: deadline - 0.01) == .countdown(until: deadline))
+        #expect(display(at: deadline) == expected)
+        #expect(display(at: deadline + 10) == expected)
+        #expect(display(at: deadline - 1, stale: true) == expected)
     }
 
     @Test func queueSuppressesDuplicatesAndDiscardsInterruptedPrompts() {

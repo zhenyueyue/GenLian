@@ -77,7 +77,10 @@ final class TrainingAppModel {
     }
 
     func setup(for plan: WorkoutPlan) -> PlanSetup {
-        preferences.setups[plan.id] ?? PlanSetup(rest: RestSettings(plan: plan))
+        #if DEBUG
+        if let rest = UITestLaunch.activityTestRest { return PlanSetup(rest: rest) }
+        #endif
+        return preferences.setups[plan.id] ?? PlanSetup(rest: RestSettings(plan: plan))
     }
 
     func isPostponed(_ plan: WorkoutPlan, now: Date = .now) -> Bool {

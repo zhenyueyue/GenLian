@@ -36,6 +36,12 @@ struct VoiceCoachSettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(Warm.secondary)
                         .accessibilityIdentifier("coach.notification-status")
+                    if let preparation = model.coachNotifications.renderStatus {
+                        Text(preparation).font(.footnote).foregroundStyle(Warm.secondary)
+                    }
+                    if let delivery = model.coachNotifications.deliveryDescription {
+                        Text(delivery).font(.footnote).foregroundStyle(Warm.secondary)
+                    }
                     if model.coachNotifications.authorization == .notDetermined {
                         WarmGlassButton(title: "允许休息通知", icon: "bell") {
                             Task { await model.coachNotifications.requestPermission() }

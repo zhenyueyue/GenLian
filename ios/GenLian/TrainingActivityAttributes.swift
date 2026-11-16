@@ -17,6 +17,8 @@ struct TrainingActivityAttributes: ActivityAttributes {
         let round: Int
         let rounds: Int
         let restDeadline: Date?
+        var nextRound: Int? = nil
+        var autoAdvance: Bool? = nil
     }
 
     let sessionID: UUID

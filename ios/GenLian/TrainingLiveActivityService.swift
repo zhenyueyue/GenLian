@@ -33,13 +33,16 @@ final class TrainingLiveActivityService {
                 case .active, .setComplete, .summary: stage = .exercise
                 }
             }
+            let next = session.upcomingPosition
             return Snapshot(id: session.id, course: session.plan.title, content: .init(
                 stage: stage,
                 exercise: session.currentExercise.name,
-                nextExercise: session.upcomingPosition.map { session.plan.exercises[$0.exerciseIndex].name },
+                nextExercise: next.map { session.plan.exercises[$0.exerciseIndex].name },
                 round: session.position.round,
                 rounds: session.plan.rounds,
-                restDeadline: stage == .rest ? deadline : nil
+                restDeadline: stage == .rest ? deadline : nil,
+                nextRound: next?.round,
+                autoAdvance: session.restSettings.autoAdvance
             ))
         }
         guard !initialized || snapshot != desired || foreground != interactive else { return }

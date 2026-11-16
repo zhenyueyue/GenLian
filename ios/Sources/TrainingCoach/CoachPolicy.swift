@@ -64,6 +64,31 @@ public struct RestReminder: Equatable, Sendable {
     public var phrase: String { CoachPolicy.restPhrase(nextExercise) }
 }
 
+public struct RestNotificationRequest: Equatable, Sendable {
+    public enum Audio: Equatable, Sendable {
+        case waiting, verified(String), failed
+    }
+
+    public enum Sound: Equatable, Sendable {
+        case speech(String), systemDefault, silent
+    }
+
+    public let reminder: RestReminder
+    public let sound: Sound
+
+    public static func resolve(
+        _ reminder: RestReminder?, permitted: Bool, soundEnabled: Bool, audio: Audio, now: Date
+    ) -> Self? {
+        guard permitted, let reminder, reminder.deadline > now else { return nil }
+        guard soundEnabled else { return .init(reminder: reminder, sound: .silent) }
+        switch audio {
+        case .waiting: return nil
+        case .verified(let filename): return .init(reminder: reminder, sound: .speech(filename))
+        case .failed: return .init(reminder: reminder, sound: .systemDefault)
+        }
+    }
+}
+
 public enum CoachPolicy {
     public enum AudioAccess: Equatable, Sendable {
         case stop, finishCurrent, speak
@@ -90,7 +115,8 @@ public enum CoachPolicy {
         let name = session.plan.exercises[next.exerciseIndex].name
         // Normal timer ticks do not replace an already scheduled notification.
         let candidate = now.addingTimeInterval(rest.remainingSeconds)
-        if let previous, previous.event == event, abs(previous.deadline.timeIntervalSince(candidate)) < 1.5 {
+        if let previous, previous.event == event, previous.nextExercise == name,
+           abs(previous.deadline.timeIntervalSince(candidate)) < 1.5 {
             return previous
         }
         return RestReminder(event: event, nextExercise: name, deadline: candidate)
@@ -106,7 +132,8 @@ public enum CoachPolicy {
     }
 
     public static func upcomingRestSpeech(_ session: WorkoutSession?) -> String? {
-        guard let session = liveSession(session), !session.isPaused, session.phase == .setComplete,
+        guard let session = liveSession(session), !session.isPaused,
+              [.prepare, .active, .nextTransition, .setComplete].contains(session.phase),
               let next = session.upcomingPosition else { return nil }
         return restPhrase(session.plan.exercises[next.exerciseIndex].name)
     }

@@ -55,6 +55,35 @@ final class GenLianUITests: XCTestCase {
     }
 
     @MainActor
+    func testLiveActivityRestExpiresWhileGenLianRemainsInBackground() async throws {
+        for mode in ["auto", "manual"] {
+            let app = launch(freezeClock: false, restMode: mode)
+            tap(AccessibilityID.Dock.start, in: app)
+            tap(AccessibilityID.Player.complete, in: app, timeout: 30)
+            _ = ready(AccessibilityID.Rest.countdown, in: app, timeout: 20)
+            let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+            settings.activate()
+            XCTAssertEqual(settings.state, .runningForeground)
+            try await Task.sleep(for: .seconds(26))
+            captureSystem("27-expired-\(mode)-compact")
+            settings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
+            try await Task.sleep(for: .seconds(1))
+            captureSystem("27-expired-\(mode)-expanded")
+            XCTAssertNotEqual(app.state, .runningForeground)
+
+            app.activate()
+            if mode == "manual" {
+                _ = ready(AccessibilityID.Rest.finish, in: app, timeout: 20)
+                XCTAssertFalse(element(AccessibilityID.Player.exercise("ex-single-row"), in: app).exists)
+                tap(AccessibilityID.Rest.finish, in: app)
+            }
+            _ = ready(AccessibilityID.Player.exercise("ex-single-row"), in: app, timeout: 20)
+            endWorkout(in: app)
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testWorkoutBackgroundKeepsActionRunningAndHonorsExplicitPause() async throws {
         let app = launch(freezeClock: false)
         tap(AccessibilityID.Dock.start, in: app)
@@ -334,12 +363,13 @@ final class GenLianUITests: XCTestCase {
     }
 
     @MainActor
-    private func launch(accessibility: Bool = false, freezeClock: Bool = true) -> XCUIApplication {
+    private func launch(accessibility: Bool = false, freezeClock: Bool = true, restMode: String? = nil) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchEnvironment["GENLIAN_UI_TEST_ID"] = UUID().uuidString
         if accessibility { app.launchEnvironment["GENLIAN_UI_TEST_ACCESSIBILITY"] = "1" }
         if freezeClock { app.launchEnvironment["GENLIAN_UI_TEST_FROZEN_CLOCK"] = "1" }
+        if let restMode { app.launchEnvironment["GENLIAN_UI_TEST_REST_MODE"] = restMode }
         app.launch()
         return app
     }
