@@ -63,9 +63,17 @@ final class GenLianUITests: XCTestCase {
     @MainActor
     private func background(_ app: XCUIApplication, for duration: Duration) async throws {
         XCUIDevice.shared.press(.home)
-        XCTAssertTrue([.runningBackground, .runningBackgroundSuspended].contains(app.state))
+        let expected: [XCUIApplication.State] = [.runningBackground, .runningBackgroundSuspended]
+        let deadline = ContinuousClock.now + .seconds(20)
+        var state = app.state
+        while !expected.contains(state), state != .notRunning, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(200))
+            state = app.state
+        }
+        XCTAssertTrue(expected.contains(state), "Expected the Home button to send GenLian to background, got \(state).")
         try await Task.sleep(for: duration)
-        XCTAssertTrue([.runningBackground, .runningBackgroundSuspended].contains(app.state))
+        state = app.state
+        XCTAssertTrue(expected.contains(state), "Expected GenLian to remain alive in background, got \(state).")
         app.activate()
         XCTAssertEqual(app.state, .runningForeground)
     }
