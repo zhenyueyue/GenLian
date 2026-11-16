@@ -61,10 +61,22 @@ public struct RestReminder: Equatable, Sendable {
         self.deadline = deadline
     }
 
-    public var phrase: String { "休息结束，准备开始\(nextExercise)。" }
+    public var phrase: String { CoachPolicy.restPhrase(nextExercise) }
 }
 
 public enum CoachPolicy {
+    public enum AudioAccess: Equatable, Sendable {
+        case stop, finishCurrent, speak
+    }
+
+    public static func audioAccess(
+        _ preferences: VoiceCoachPreferences, hasContext: Bool, foreground: Bool, interrupted: Bool
+    ) -> AudioAccess {
+        guard preferences.enabled, hasContext, !interrupted else { return .stop }
+        if foreground { return .speak }
+        return preferences.background ? .finishCurrent : .stop
+    }
+
     public static func liveSession(_ session: WorkoutSession?) -> WorkoutSession? {
         guard let session, session.phase != .summary, !session.needsResume else { return nil }
         return session
@@ -93,6 +105,14 @@ public enum CoachPolicy {
         permitted && preferences.enabled && preferences.background && preferences.restEnd
     }
 
+    public static func upcomingRestSpeech(_ session: WorkoutSession?) -> String? {
+        guard let session = liveSession(session), !session.isPaused, session.phase == .setComplete,
+              let next = session.upcomingPosition else { return nil }
+        return restPhrase(session.plan.exercises[next.exerciseIndex].name)
+    }
+
+    static func restPhrase(_ name: String) -> String { "休息结束，准备开始\(name)。" }
+
     public static func prompts(
         from old: WorkoutSession?, to session: WorkoutSession, preferences: VoiceCoachPreferences
     ) -> [CoachPrompt] {
@@ -106,7 +126,7 @@ public enum CoachPolicy {
         if preferences.restEnd,
            old.phase == .rest && (session.phase == .restReady || session.phase == .nextTransition),
            let next = old.upcomingPosition, let owner = old.restOwner {
-            let text = "休息结束，准备开始\(old.plan.exercises[next.exerciseIndex].name)。"
+            let text = restPhrase(old.plan.exercises[next.exerciseIndex].name)
             return [.init(id: "\(session.id)-\(key(owner))-rest-end", text: text)]
         }
         if old.phase != .active && session.phase == .active {

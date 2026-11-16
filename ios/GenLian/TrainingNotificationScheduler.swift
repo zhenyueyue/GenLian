@@ -15,6 +15,7 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
     private(set) var soundEnabled = false
     private(set) var scheduleFailed = false
     private var desired: RestReminder?
+    private var preparing: String?
     private var installed: RestReminder?
     private var installedSound: String?
     private var preferences = VoiceCoachPreferences()
@@ -59,14 +60,17 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
         await refreshPermission()
     }
 
-    func update(_ reminder: RestReminder?, preferences: VoiceCoachPreferences, foreground: Bool) {
-        let desired = CoachPolicy.allowsNotification(preferences, permitted: true) ? reminder : nil
+    func update(_ reminder: RestReminder?, preparing: String?, preferences: VoiceCoachPreferences, foreground: Bool) {
+        let enabled = CoachPolicy.allowsNotification(preferences, permitted: true)
+        let desired = enabled ? reminder : nil
         let soundChanged = preferences.rate != self.preferences.rate || preferences.volume != self.preferences.volume
         let changed = self.desired != desired || soundChanged
+        let returningToForeground = foreground && !inForeground
         self.desired = desired
+        self.preparing = enabled ? preparing : nil
         self.preferences = preferences
         inForeground = foreground
-        if changed {
+        if changed || returningToForeground {
             removeReminder()
             renderFailure = nil
             install()
@@ -88,7 +92,7 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
             guard let self else { return }
             defer { installer = nil }
             while canSchedule, let reminder = desired, reminder.deadline.timeIntervalSinceNow >= 1 {
-                let sound = cachedSound(reminder)
+                let sound = cachedSound(reminder.phrase)
                 if installed == reminder && installedSound == sound { return }
                 let content = UNMutableNotificationContent()
                 content.title = "跟练 · 休息结束"
@@ -115,30 +119,31 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
         }
     }
 
-    private func soundLocation(_ reminder: RestReminder) -> URL? {
+    private func soundLocation(_ phrase: String) -> URL? {
         guard let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return nil }
-        let key = "\(reminder.phrase)|\(preferences.rate)|\(preferences.volume)"
+        let key = "\(phrase)|\(preferences.rate)|\(preferences.volume)"
         let hash = SHA256.hash(data: Data(key.utf8)).map { String(format: "%02x", Int($0)) }.joined()
         return library.appendingPathComponent("Sounds", isDirectory: true)
             .appendingPathComponent("genlian-\(hash).caf")
     }
 
-    private func cachedSound(_ reminder: RestReminder) -> String? {
-        guard let file = soundLocation(reminder), FileManager.default.fileExists(atPath: file.path) else { return nil }
+    private func cachedSound(_ phrase: String) -> String? {
+        guard let file = soundLocation(phrase), FileManager.default.fileExists(atPath: file.path) else { return nil }
         return file.lastPathComponent
     }
 
     private func renderIfNeeded() {
         guard inForeground, canSchedule, soundEnabled, renderTask == nil,
-              let reminder = desired, reminder.deadline.timeIntervalSinceNow > 3,
-              let file = soundLocation(reminder), cachedSound(reminder) == nil,
+              desired.map({ $0.deadline.timeIntervalSinceNow > 3 }) != false,
+              let phrase = desired?.phrase ?? preparing, let file = soundLocation(phrase),
+              cachedSound(phrase) == nil,
               renderFailure != file.lastPathComponent else { return }
         let rate = preferences.rate
         let volume = preferences.volume
         renderTask = Task { [weak self] in
             guard let self else { return }
             do {
-                try await renderer.render(reminder.phrase, rate: rate, volume: volume, to: file)
+                try await renderer.render(phrase, rate: rate, volume: volume, to: file)
             } catch {
                 renderFailure = file.lastPathComponent
             }

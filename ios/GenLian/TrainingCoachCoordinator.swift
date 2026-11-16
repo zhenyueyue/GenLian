@@ -19,7 +19,10 @@ final class TrainingCoachCoordinator {
     ) {
         let now = Date.now
         reminder = CoachPolicy.reminder(for: session, previous: reminder, now: now)
-        notifications.update(reminder, preferences: preferences, foreground: foreground)
+        notifications.update(
+            reminder, preparing: CoachPolicy.upcomingRestSpeech(session), preferences: preferences,
+            foreground: foreground
+        )
         let liveSession = CoachPolicy.liveSession(session)
         live.update(liveSession, deadline: reminder?.deadline, foreground: foreground)
 

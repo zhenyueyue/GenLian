@@ -5,6 +5,28 @@ import TrainingCore
 
 @Suite @MainActor
 struct CoachPolicyTests {
+    @Test func audioInterruptionStopsAndOnlyForegroundMayStartFreshUtterances() {
+        var settings = VoiceCoachPreferences()
+        #expect(CoachPolicy.audioAccess(settings, hasContext: true, foreground: false, interrupted: false) == .stop)
+        settings.background = true
+        #expect(CoachPolicy.audioAccess(settings, hasContext: true, foreground: false, interrupted: false) == .finishCurrent)
+        #expect(CoachPolicy.audioAccess(settings, hasContext: true, foreground: true, interrupted: true) == .stop)
+        #expect(CoachPolicy.audioAccess(settings, hasContext: false, foreground: true, interrupted: false) == .stop)
+        #expect(CoachPolicy.audioAccess(settings, hasContext: true, foreground: true, interrupted: false) == .speak)
+    }
+
+    @Test func confirmedSetCanPrepareAudioBeforeRestWithoutSchedulingEarly() throws {
+        let training = try CoachFixture()
+        try training.send(.startPreparedAction(.prepare, training.session.position))
+        #expect(CoachPolicy.upcomingRestSpeech(training.session) == nil)
+        try training.send(.complete(training.session.currentKey, .init(.repetitions(12))))
+        let message = CoachPolicy.upcomingRestSpeech(training.session)
+        #expect(message?.contains("俯身单臂哑铃划船") == true)
+        #expect(CoachPolicy.reminder(for: training.session, previous: nil, now: training.clock.date) == nil)
+        try training.send(.startRest(try #require(training.session.restOwner)))
+        #expect(CoachPolicy.reminder(for: training.session, previous: nil, now: training.clock.date)?.phrase == message)
+    }
+
     @Test func queueSuppressesDuplicatesAndDiscardsInterruptedPrompts() {
         var queue = CoachQueue()
         let old = CoachPrompt(id: "previous", text: "上一动作")

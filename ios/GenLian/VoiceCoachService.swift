@@ -35,16 +35,17 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
         self.context = context
         self.preferences = preferences
         inForeground = foreground
-        guard preferences.enabled, context != nil else { stop(); return }
-        if !foreground {
+        switch CoachPolicy.audioAccess(
+            preferences, hasContext: context != nil, foreground: foreground, interrupted: blocksPlayback
+        ) {
+        case .stop:
+            stop()
+        case .finishCurrent:
             queue.cancelPending()
-            if !preferences.background { stop() }
-            return
+        case .speak:
+            for prompt in prompts { queue.enqueue(prompt) }
+            speakNext()
         }
-        // Interrupted prompts are discarded. The next eligible event uses a fresh session.
-        guard !blocksPlayback else { return }
-        for prompt in prompts { queue.enqueue(prompt) }
-        speakNext()
     }
 
     private func speakNext() {
