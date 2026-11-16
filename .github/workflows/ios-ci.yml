@@ -65,13 +65,19 @@ jobs:
         if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: |
           xcodebuild -project "$XCODE_PROJECT" -list 2>&1 | tee "$CI_RESULTS/schemes.log"
-          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showdestinations \
-            2>&1 | tee "$CI_RESULTS/destinations.log"
-          xcrun simctl list devices available --json \
-            > "$CI_RESULTS/simulators.json" 2> "$CI_RESULTS/simulators.stderr.log"
-          python3 .github/scripts/ios_ci.py simulator "$CI_RESULTS" \
-            "$XCODE_PROJECT/xcshareddata/xcschemes/$XCODE_SCHEME.xcscheme" \
-            2>&1 | tee "$CI_RESULTS/simulator-selection.log"
+          for attempt in 1 2 3; do
+            xcrun simctl list devices available --json \
+              > "$CI_RESULTS/simulators.json" 2> "$CI_RESULTS/simulators.stderr.log"
+            xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showdestinations \
+              2>&1 | tee "$CI_RESULTS/destinations.log" "$CI_RESULTS/destinations-$attempt.log"
+            if python3 .github/scripts/ios_ci.py simulator "$CI_RESULTS" \
+              "$XCODE_PROJECT/xcshareddata/xcschemes/$XCODE_SCHEME.xcscheme" \
+              2>&1 | tee -a "$CI_RESULTS/simulator-selection.log"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 10; fi
+          done
+          exit 1
 
       - name: Build GenLian for iOS Simulator
         id: app
