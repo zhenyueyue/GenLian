@@ -52,7 +52,10 @@ struct WorkoutDetailView: View {
         }
     }
 
-    private var back: some View { WarmGlassButton(title: "今日", icon: "chevron.left", action: close) }
+    private var back: some View {
+        WarmGlassButton(title: "今日", icon: "chevron.left", action: close)
+            .accessibilityIdentifier(AccessibilityID.Detail.back)
+    }
     private var indicator: some View {
         Text("动作 \(index + 1) / \(plan.exercises.count)")
             .font(.caption.weight(.semibold).monospacedDigit())
@@ -87,6 +90,7 @@ struct WorkoutDetailView: View {
                     .font(.caption.weight(.semibold)).foregroundStyle(Warm.accentText)
                 Text(exercise.name).font(.system(size: titleSize, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier(AccessibilityID.Detail.title)
             }
             .padding(.horizontal, Warm.pageEdge)
             .padding(.bottom, 9)

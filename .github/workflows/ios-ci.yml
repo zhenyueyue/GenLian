@@ -89,16 +89,28 @@ jobs:
             "$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$XCODE_SCHEME.app" \
             2>&1 | tee "$CI_RESULTS/resources.log"
 
-      - name: Run configured iOS simulator tests
-        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' && steps.simulator.outputs.has_tests == 'true' }}
-        timeout-minutes: 12
+      - name: Run GenLian XCUITests on iOS Simulator
+        id: ui
+        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outcome == 'success' }}
+        timeout-minutes: 18
         env:
           DEVICE: ${{ steps.simulator.outputs.device }}
         run: |
           xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
             -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" \
             -derivedDataPath "$DERIVED_DATA" -resultBundlePath "$CI_RESULTS/GenLian-test.xcresult" \
-            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$CI_RESULTS/GenLian-test.log"
+            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$CI_RESULTS/GenLian-test.log"
+
+      - name: Export UI test results and screenshots
+        if: ${{ !cancelled() && (steps.ui.outcome == 'success' || steps.ui.outcome == 'failure') }}
+        env:
+          UI_OUTCOME: ${{ steps.ui.outcome }}
+        run: |
+          result="$CI_RESULTS/GenLian-test.xcresult"
+          xcrun xcresulttool get test-results summary --path "$result" > "$CI_RESULTS/ui-test-summary.json"
+          xcrun xcresulttool export attachments --path "$result" --output-path "$CI_RESULTS/ui-attachments" \
+            2>&1 | tee "$CI_RESULTS/ui-attachments.log"
+          python3 .github/scripts/ios_ci.py ui-tests "$CI_RESULTS" "$UI_OUTCOME"
 
       - name: Install and launch GenLian in the simulator
         if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' }}

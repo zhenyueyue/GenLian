@@ -43,8 +43,17 @@ enum WarmGlassTone {
     var solid: Color { self == .dim ? Warm.smoke : Warm.canvas }
 }
 
+extension EnvironmentValues {
+    var warmReduceTransparency: Bool {
+        #if DEBUG
+        if UITestLaunch.accessibilityPreview { return true }
+        #endif
+        return accessibilityReduceTransparency
+    }
+}
+
 private struct WarmGlassSurface<Outline: Shape>: ViewModifier {
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.warmReduceTransparency) private var reduceTransparency
     let tone: WarmGlassTone
     let shape: Outline
     let interactive: Bool
@@ -149,9 +158,11 @@ struct WarmDock: View {
         HStack(spacing: 4) {
             item("今日", icon: "safari", selected: !showingArchive, action: openToday)
             item("开练", icon: "play.fill", selected: false, opensPlayer: true, action: start)
+                .accessibilityIdentifier(AccessibilityID.Dock.start)
                 .disabled(!canStart)
                 .opacity(canStart ? 1 : 0.45)
             item("档案", icon: "square.stack.3d.up", selected: showingArchive, action: openArchive)
+                .accessibilityIdentifier(AccessibilityID.Dock.archive)
         }
         .padding(6)
         .frame(maxWidth: 348)
@@ -190,18 +201,27 @@ struct WarmDock: View {
 struct WarmSheetHeader: View {
     let title: String
     let close: @MainActor () -> Void
+    var titleID: String? = nil
 
     var body: some View {
         HStack {
-            Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+            if let titleID {
+                heading.accessibilityIdentifier(titleID)
+            } else {
+                heading
+            }
             Spacer()
             WarmGlassButton(title: "关闭", icon: "xmark", iconOnly: true, action: close)
         }
     }
+
+    private var heading: some View {
+        Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+    }
 }
 
 struct WarmSheetBackground: ViewModifier {
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.warmReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
         content

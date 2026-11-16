@@ -8,7 +8,7 @@ struct WorkoutPlayerView: View {
     let mediaAnimation: Namespace.ID
     let returnToToday: @MainActor () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.warmReduceTransparency) private var reduceTransparency
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showsExit = false
     @State private var resumeAfterExit = false
@@ -146,6 +146,7 @@ struct WorkoutPlayerView: View {
 
     private var exitButton: some View {
         WarmGlassButton(title: "退出", icon: "chevron.left", tone: tone, action: openExit)
+            .accessibilityIdentifier(AccessibilityID.Player.exit)
     }
     private var voiceButton: some View {
         WarmGlassButton(
@@ -161,6 +162,7 @@ struct WorkoutPlayerView: View {
             .foregroundStyle(tone.foreground)
             .padding(9)
             .warmGlass(tone, in: Capsule())
+            .accessibilityIdentifier(AccessibilityID.Player.status)
     }
 
     @ViewBuilder
@@ -197,6 +199,7 @@ struct WorkoutPlayerView: View {
                     }
                 }
                 .disabled(session.currentResult.measurement.value <= 0)
+                .accessibilityIdentifier(AccessibilityID.Player.complete)
             }
             activeControls
         }
@@ -214,6 +217,7 @@ struct WorkoutPlayerView: View {
                 Text("\(exercise.muscleGroup) · \(exercise.tempo)")
                     .font(.caption.monospacedDigit()).foregroundStyle(Warm.slate)
                 Text(exercise.name).font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier(AccessibilityID.Player.exercise(exercise.id))
                 Text(model.voiceEnabled ? exercise.coachingCue : exercise.targetMuscle)
                     .font(.subheadline).foregroundStyle(Warm.secondary)
                 if !reviewing {
@@ -266,12 +270,14 @@ struct WorkoutPlayerView: View {
         .disabled(completed || active)
         .accessibilityAddTraits(active ? .isSelected : [])
         .accessibilityLabel(completed ? name + "已完成" : (active ? name + "进行中" : name))
+        .accessibilityIdentifier(AccessibilityID.Player.side(side.rawValue))
     }
 
     private var stepper: some View {
         let measurement = session.currentResult.measurement
         return VStack(spacing: 0) {
             stepButton("plus", title: "增加实际\(measurement.unitText)") { changeMeasurement(1) }
+                .accessibilityIdentifier(AccessibilityID.Player.increase)
             Button {
                 updateMeasurement(nil)
             } label: {
@@ -347,6 +353,7 @@ struct WorkoutPlayerView: View {
                 WarmPrimaryButton(
                     title: session.confirmationHeld ? "进入组间休息" : "立即进入休息 (\(Int(session.rest?.targetSeconds ?? 0))s)"
                 ) { send(.startRest(owner)) }
+                    .accessibilityIdentifier(AccessibilityID.Player.enterRest)
             }
         }
     }
@@ -451,6 +458,7 @@ struct WorkoutPlayerView: View {
                         showsExit = false
                     }
                 }
+                .accessibilityIdentifier(AccessibilityID.Player.end)
             }
             .padding(Warm.pageEdge)
         }

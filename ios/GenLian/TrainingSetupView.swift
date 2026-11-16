@@ -25,7 +25,7 @@ struct TrainingSetupView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            WarmSheetHeader(title: "配重与休息", close: close)
+            WarmSheetHeader(title: "配重与休息", close: close, titleID: AccessibilityID.Setup.title)
                 .padding(.horizontal, Warm.pageEdge)
                 .padding(.top, 16)
             ScrollView {
@@ -61,6 +61,7 @@ struct TrainingSetupView: View {
     private var startButton: some View {
         WarmPrimaryButton(title: "保存并开练", icon: "play.fill") { start(draft) }
             .disabled(!model.available || model.archive.current != nil)
+            .accessibilityIdentifier(AccessibilityID.Setup.start)
     }
 
     private var restSettings: some View {
@@ -197,6 +198,7 @@ private struct LoadSelector: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(selected ? .isSelected : [])
+                    .accessibilityIdentifier(AccessibilityID.Setup.plates(choice.id))
                 }
             }
             ViewThatFits(in: .horizontal) {

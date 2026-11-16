@@ -8,9 +8,21 @@ struct GenLianApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TrainingShell(model: model)
-                .tint(Warm.accent)
+            content.tint(Warm.accent)
         }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        #if DEBUG
+        if UITestLaunch.accessibilityPreview {
+            TrainingShell(model: model).dynamicTypeSize(.accessibility2)
+        } else {
+            TrainingShell(model: model)
+        }
+        #else
+        TrainingShell(model: model)
+        #endif
     }
 }
 

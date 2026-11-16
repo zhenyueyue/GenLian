@@ -26,10 +26,15 @@ final class TrainingAppModel {
     @ObservationIgnored private var controller: TrainingController?
     @ObservationIgnored private var sceneActive = false
     @ObservationIgnored private let voice = TrainingVoice()
-    @ObservationIgnored private let defaults = UserDefaults.standard
+    @ObservationIgnored private let defaults: UserDefaults
     private static let preferencesKey = "genlian.training-preferences"
 
     init() {
+        #if DEBUG
+        defaults = UITestLaunch.preferences()
+        #else
+        defaults = .standard
+        #endif
         if let bytes = defaults.data(forKey: Self.preferencesKey),
            let saved = try? JSONDecoder().decode(TrainingPreferences.self, from: bytes) {
             preferences = saved
@@ -43,7 +48,11 @@ final class TrainingAppModel {
         guard controller == nil else { return }
         do {
             plans = try BuiltInCatalog.load()
+            #if DEBUG
+            let sessionController = try UITestLaunch.controller()
+            #else
             let sessionController = try TrainingController(store: AtomicTrainingStore.applicationSupport())
+            #endif
             if !sceneActive { try sessionController.enterBackground() }
             controller = sessionController
             archive = sessionController.archive

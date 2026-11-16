@@ -47,11 +47,13 @@ struct WorkoutRestView: View {
                 .minimumScaleFactor(0.35)
                 .contentTransition(.identity)
                 .accessibilityLabel(ready ? "休息完成，等待手动确认" : "剩余 \(Int(rest.remainingSeconds.rounded(.up))) 秒")
+                .accessibilityIdentifier(AccessibilityID.Rest.countdown)
             progress(rest)
             Text("已实休 \(Int(rest.actualSeconds))s · 设定 \(Int(rest.targetSeconds))s")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(Warm.canvas)
                 .multilineTextAlignment(.center)
+                .accessibilityIdentifier(AccessibilityID.Rest.timing)
             if let next = session.upcomingPosition {
                 preview(next)
                     .padding(.top, 10)
@@ -116,8 +118,10 @@ struct WorkoutRestView: View {
                 WarmGlassButton(title: "−15s", tone: .dim) { send(.adjustRest(owner, .subtractFifteen)) }
                     .disabled(ready)
                     .accessibilityLabel("减少休息 15 秒")
+                    .accessibilityIdentifier(AccessibilityID.Rest.subtract)
                 WarmGlassButton(title: "+15s", tone: .dim) { send(.adjustRest(owner, .addFifteen)) }
                     .accessibilityLabel("增加休息 15 秒")
+                    .accessibilityIdentifier(AccessibilityID.Rest.add)
             }
         }
     }
@@ -126,6 +130,7 @@ struct WorkoutRestView: View {
         WarmGlassButton(title: ready ? "开始下一动作" : "提前结束休息", tone: .elevated, fillsWidth: true) {
             send(.finishRest(owner))
         }
+        .accessibilityIdentifier(AccessibilityID.Rest.finish)
     }
 }
 
@@ -177,6 +182,7 @@ struct PrepareStage: View {
                 title: preparing ? "我已就位，立即开始" : "直接开始本动作（\(exercise.target.display)）",
                 tone: .elevated, fillsWidth: true, action: start
             )
+            .accessibilityIdentifier(preparing ? AccessibilityID.Player.prepare : AccessibilityID.Player.next)
         }
     }
 }

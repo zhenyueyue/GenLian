@@ -9,7 +9,7 @@ struct TrainingHistoryView: View {
     @Environment(\.timeZone) private var timeZone
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.warmReduceTransparency) private var reduceTransparency
     @State private var mode: HistoryMode = .records
     @State private var filter: HistoryFilter = .all
     @State private var monthOverride: TrainingMonth?
@@ -120,6 +120,7 @@ struct TrainingHistoryView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("个人训练志").font(.caption.weight(.semibold)).foregroundStyle(Warm.accentText)
             Text("训练档案").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier(AccessibilityID.Record.historyTitle)
         }
     }
 
@@ -227,6 +228,7 @@ struct TrainingHistoryView: View {
                 .contentShape(RoundedRectangle(cornerRadius: 16))
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier(AccessibilityID.Record.latest)
         }
     }
 

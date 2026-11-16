@@ -21,6 +21,15 @@ struct TodayView: View {
     private var canStart: Bool { model.available && (!postponed || model.archive.current != nil) }
     private var hasEquipment: Bool { plan.exercises.contains { $0.dumbbellCount > 0 } }
 
+    private var heroTitleParts: (title: String, scope: String?) {
+        guard plan.title.hasSuffix("）"), let split = plan.title.firstIndex(of: "（"), split != plan.title.startIndex else {
+            return (plan.title, nil)
+        }
+        let scope = plan.title[plan.title.index(after: split)..<plan.title.index(before: plan.title.endIndex)]
+        guard !scope.isEmpty, !scope.contains("）") else { return (plan.title, nil) }
+        return (String(plan.title[..<split]), String(scope))
+    }
+
     var body: some View {
         GeometryReader { viewport in
             ZStack(alignment: .top) {
@@ -63,6 +72,7 @@ struct TodayView: View {
                 WarmPrimaryButton(title: startTitle, compact: true, action: start).disabled(!canStart)
             } else {
                 WarmGlassButton(title: "配重设定", icon: "slider.horizontal.3", action: showSetup)
+                    .accessibilityIdentifier(AccessibilityID.Today.setup)
             }
         }
         .padding(.horizontal, Warm.pageEdge)
@@ -98,11 +108,13 @@ struct TodayView: View {
                 .init(color: Warm.canvas, location: 1)
             ], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 7) {
-                Text(media?.kicker ?? plan.category.rawValue)
+                Text((media?.kicker ?? plan.category.rawValue) + (heroTitleParts.scope.map { " · \($0)" } ?? ""))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Warm.accentText)
-                Text(plan.title).font(.system(size: heroTitle, weight: .semibold))
+                    .accessibilityIdentifier(AccessibilityID.Today.scope)
+                Text(heroTitleParts.title).font(.system(size: heroTitle, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier(AccessibilityID.Today.title)
                 Text("\(plan.estimatedMinutesRange) · \(plan.rounds) 轮 · \(hasEquipment ? setup.load.display : "徒手自重")")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(Warm.secondary)
@@ -162,6 +174,7 @@ struct TodayView: View {
                     else { movementRow(exercise, index: index) }
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier(AccessibilityID.Today.exercise(exercise.id))
                 Divider().overlay(Warm.divider)
             }
             if hasEquipment {
@@ -261,6 +274,7 @@ struct TodayView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(plan.id == option.id ? .isSelected : [])
+                    .accessibilityIdentifier(AccessibilityID.Today.course(option.id))
                 }
             }
         }

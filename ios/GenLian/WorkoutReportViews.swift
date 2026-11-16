@@ -13,6 +13,7 @@ struct WorkoutSummaryView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(spacing: 4) {
                     WarmPrimaryButton(title: "收入个人训练档案", icon: "checkmark", action: archive)
+                        .accessibilityIdentifier(AccessibilityID.Record.archive)
                         .padding(6)
                         .warmGlass(.elevated, in: Capsule())
                     Button("稍后处理") { close() }
@@ -185,6 +186,7 @@ private struct WorkoutRecordContent: View {
             Text(session.plan.title)
                 .font(.system(size: titleSize, weight: .semibold))
                 .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier(isSummary ? AccessibilityID.Record.summaryTitle : AccessibilityID.Record.detailTitle)
             if isSummary, let note = summaryNote {
                 Text(note).font(.subheadline).foregroundStyle(Warm.secondary)
             }
@@ -230,9 +232,13 @@ private struct WorkoutRecordContent: View {
                 label: "实录组数",
                 note: "完成 \(report.completedExercises)/\(report.plannedExercises) 个动作（按轮）"
             )
+            .accessibilityIdentifier(AccessibilityID.Record.groups)
             VStack(alignment: .leading, spacing: 7) {
                 if report.usesRepetitions { WarmMetric(value: "\(report.totals.repetitions)", label: "累计次数") }
-                if report.usesSeconds { WarmMetric(value: "\(report.totals.holdSeconds)", label: "累计秒数") }
+                if report.usesSeconds {
+                    WarmMetric(value: "\(report.totals.holdSeconds)", label: "累计秒数")
+                        .accessibilityIdentifier(AccessibilityID.Record.seconds)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             WarmMetric(value: workoutClock(session.elapsedSeconds), label: "有效时长", highlighted: true)
@@ -313,6 +319,9 @@ private struct WorkoutRecordContent: View {
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(AccessibilityID.Record.entry(
+            entry.key.position.round, entry.key.position.exerciseIndex, entry.key.position.set, entry.key.side.rawValue
+        ))
     }
 
     private func sideLabel(_ side: Side) -> String {

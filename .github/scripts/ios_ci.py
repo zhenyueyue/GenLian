@@ -41,6 +41,37 @@ def report_tests(results, outcome):
         raise SystemExit("Successful Swift command did not report a passing test run.")
 
 
+def report_ui_tests(results, outcome):
+    summary = json.loads((results / "ui-test-summary.json").read_text(encoding="utf-8"))
+    passed, failed, skipped = (summary[key] for key in ("passedTests", "failedTests", "skippedTests"))
+    summary_line = f"GenLianUITests: {passed} passed, {failed} failed, {skipped} skipped."
+    print(summary_line)
+    with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as file:
+        file.write(summary_line + "\n")
+
+    attachments = results / "ui-attachments"
+    manifest = json.loads((attachments / "manifest.json").read_text(encoding="utf-8"))
+    screenshots = results / "ui-screenshots"
+    screenshots.mkdir(exist_ok=True)
+    for case in manifest:
+        for attachment in case["attachments"]:
+            name = attachment.get("suggestedHumanReadableName", "")
+            match = re.match(r"^([0-9]{2}[a-z]?(?:-[a-z]+)+)(?=[_.]|$)", name)
+            source = attachments / attachment["exportedFileName"]
+            if match and source.suffix.lower() == ".png":
+                shutil.copyfile(source, screenshots / f"{match[1]}.png")
+    if outcome == "success":
+        if passed < 3 or failed or skipped:
+            raise SystemExit("The three required GenLian UI tests did not all pass.")
+        required = {
+            "01-today", "02-workout-detail", "03-training-setup", "04-strength-player",
+            "05-between-set-rest", "06-workout-summary", "07-training-history", "08-history-detail",
+        }
+        missing = required - {path.stem for path in screenshots.glob("*.png")}
+        if missing:
+            raise SystemExit("Required UI screenshots missing: " + ", ".join(sorted(missing)))
+
+
 def select_iphone(devices, destinations):
     supported, *_ = destinations.split("Ineligible destinations", 1)
     valid_ids = {
@@ -53,12 +84,15 @@ def select_iphone(devices, destinations):
         if not version:
             continue
         for entry in entries:
+            model = entry.get("deviceTypeIdentifier", "").removeprefix("com.apple.CoreSimulator.SimDeviceType.")
             if (
                 entry.get("isAvailable")
                 and entry.get("udid", "").upper() in valid_ids
-                and entry.get("deviceTypeIdentifier", "").startswith("com.apple.CoreSimulator.SimDeviceType.iPhone-")
+                and model.startswith("iPhone-")
             ):
+                preference = 2 if model == "iPhone-15-Pro-Max" else int(model.endswith("-Pro-Max"))
                 ranks.append((
+                    preference,
                     tuple(map(int, version[1].split("-"))),
                     entry.get("state") == "Booted",
                     entry["name"],
@@ -77,15 +111,13 @@ def discover_simulator(results, scheme_path):
         or bool(scheme.findall("./TestAction/TestPlans/TestPlanReference"))
     )
     if selected is None:
-        device = ""
-        print("No available iPhone destination matched the GenLian scheme; simulator tests and launch skipped.")
-    else:
-        version, _, name, device = selected
-        print(f"Selected {name}, iOS {'.'.join(map(str, version))}, {device}.")
+        raise SystemExit("No available iPhone destination matched the GenLian scheme.")
     if not has_tests:
-        print("No enabled test target or test plan in the shared GenLian scheme; in-simulator xcodebuild test skipped.")
+        raise SystemExit("No enabled test target or test plan in the shared GenLian scheme.")
+    _, version, _, name, device = selected
+    print(f"Selected {name}, iOS {'.'.join(map(str, version))}, {device}.")
     with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as file:
-        file.write(f"device={device}\nhas_tests={str(has_tests).lower()}\n")
+        file.write(f"device={device}\n")
 
 
 def verify_resources(results, app):
@@ -133,6 +165,8 @@ if __name__ == "__main__":
     results = Path(directory)
     if command == "tests":
         report_tests(results, value)
+    elif command == "ui-tests":
+        report_ui_tests(results, value)
     elif command == "simulator":
         discover_simulator(results, Path(value))
     elif command == "resources":
