@@ -3,6 +3,7 @@ import TrainingCore
 
 struct WorkoutRestView: View {
     let session: WorkoutSession
+    let mediaNote: String?
     let send: @MainActor (WorkoutAction) -> Void
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 90
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -58,6 +59,12 @@ struct WorkoutRestView: View {
                 preview(next)
                     .padding(.top, 10)
             }
+            if let mediaNote {
+                Text(mediaNote)
+                    .font(.caption)
+                    .foregroundStyle(Warm.canvas)
+                    .multilineTextAlignment(.center)
+            }
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 8)
@@ -108,7 +115,7 @@ struct WorkoutRestView: View {
         }
         .padding(10)
         .foregroundStyle(Warm.ink)
-        .frame(maxWidth: 350, alignment: .leading)
+        .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : 350, alignment: .leading)
         .warmGlass(.elevated, in: RoundedRectangle(cornerRadius: 16))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(AccessibilityID.Rest.next)

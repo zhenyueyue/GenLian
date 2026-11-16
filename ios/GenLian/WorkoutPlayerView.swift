@@ -22,6 +22,9 @@ struct WorkoutPlayerView: View {
     private var restPhase: Bool { session.phase == .rest || session.phase == .restReady }
     private var dim: Bool { session.phase != .active }
     private var tone: WarmGlassTone { dim ? .dim : .light }
+    private var mediaNote: String {
+        WarmMedia.stage(exercise.id) == nil ? "暂无该动作实拍视频或姿态图" : "静态姿态参考 · 按自身节奏发力"
+    }
 
     var body: some View {
         ZStack {
@@ -118,12 +121,14 @@ struct WorkoutPlayerView: View {
                 }
             }
             HStack(spacing: 6) {
-                Text(WarmMedia.stage(exercise.id) == nil ? "暂无该动作实拍视频或姿态图" : "静态姿态参考 · 按自身节奏发力")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(tone.foreground)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .warmGlass(tone, in: Capsule())
+                if !movesMediaNoteIntoRest {
+                    Text(mediaNote)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(tone.foreground)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .warmGlass(tone, in: Capsule())
+                }
                 Spacer(minLength: 0)
                 if dim {
                     WarmGlassButton(title: restPhase ? "暂停休息" : "暂停", icon: "pause.fill", tone: tone) {
@@ -133,6 +138,8 @@ struct WorkoutPlayerView: View {
             }
         }
     }
+
+    private var movesMediaNoteIntoRest: Bool { restPhase && typeSize == .accessibility5 }
 
     private func progressColor(_ index: Int) -> Color {
         let item = session.plan.exercises[index]
@@ -175,7 +182,9 @@ struct WorkoutPlayerView: View {
         case .setComplete:
             confirmationStage
         case .rest, .restReady:
-            WorkoutRestView(session: session) { action in _ = send(action) }
+            WorkoutRestView(session: session, mediaNote: movesMediaNoteIntoRest ? mediaNote : nil) { action in
+                _ = send(action)
+            }
         case .summary:
             EmptyView()
         }

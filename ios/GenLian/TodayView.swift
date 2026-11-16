@@ -103,8 +103,9 @@ struct TodayView: View {
                 .frame(height: 144)
                 .frame(maxHeight: .infinity, alignment: .top)
             LinearGradient(stops: [
-                .init(color: .clear, location: 0.44),
-                .init(color: Warm.canvas.opacity(0.72), location: 0.72),
+                .init(color: .clear, location: typeSize.isAccessibilitySize ? 0.26 : 0.44),
+                .init(color: Warm.canvas.opacity(typeSize.isAccessibilitySize ? 0.82 : 0.72),
+                      location: typeSize.isAccessibilitySize ? 0.49 : 0.72),
                 .init(color: Warm.canvas.opacity(0.96), location: 0.88),
                 .init(color: Warm.canvas, location: 1)
             ], startPoint: .top, endPoint: .bottom)

@@ -253,7 +253,8 @@ final class GenLianUITests: XCTestCase {
             if target.exists {
                 let frame = target.frame
                 if viewport.contains(frame) && target.isHittable { return target }
-                travel = min(0.5, max(-0.5, (frame.midY - viewport.midY) / max(viewport.height, 1)))
+                let offset = (frame.midY - viewport.midY) / max(viewport.height, 1)
+                travel = offset >= 0 ? min(0.5, max(0.12, offset)) : max(-0.5, min(-0.12, offset))
             } else {
                 travel = 0.5
             }
