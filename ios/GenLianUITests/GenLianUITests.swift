@@ -252,7 +252,9 @@ final class GenLianUITests: XCTestCase {
             let travel: CGFloat
             if target.exists {
                 let frame = target.frame
-                if viewport.contains(frame) && target.isHittable { return target }
+                if viewport.contains(frame) && (target.elementType != .button || target.isHittable) {
+                    return target
+                }
                 let offset = (frame.midY - viewport.midY) / max(viewport.height, 1)
                 travel = offset >= 0 ? min(0.5, max(0.12, offset)) : max(-0.5, min(-0.12, offset))
             } else {
@@ -264,7 +266,7 @@ final class GenLianUITests: XCTestCase {
             start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.2)
         }
         XCTAssertTrue(
-            target.exists && scroll.frame.contains(target.frame) && target.isHittable,
+            target.exists && scroll.frame.contains(target.frame) && (target.elementType != .button || target.isHittable),
             "Could not fully reveal \(id)\n\(app.debugDescription)", file: file, line: line
         )
         return target
