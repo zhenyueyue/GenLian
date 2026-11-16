@@ -39,6 +39,7 @@ struct TrainingLiveActivityWidget: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     countdown(context).monospacedDigit()
+                        .foregroundStyle(.white)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -52,7 +53,12 @@ struct TrainingLiveActivityWidget: Widget {
             } compactLeading: {
                 Image(systemName: "figure.strengthtraining.traditional").foregroundStyle(.orange)
             } compactTrailing: {
-                countdown(context).monospacedDigit()
+                countdown(context)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(width: context.state.restDeadline == nil ? nil : 44, alignment: .trailing)
+                    .foregroundStyle(.white)
             } minimal: {
                 Image(systemName: context.state.stage == .paused ? "pause.fill" : "figure.strengthtraining.traditional")
                     .foregroundStyle(.orange)
@@ -70,7 +76,6 @@ struct TrainingLiveActivityWidget: Widget {
         if let deadline = context.state.restDeadline, !context.isStale, deadline > now {
             Text(timerInterval: now...deadline, countsDown: true)
                 .multilineTextAlignment(.trailing)
-                .fixedSize(horizontal: true, vertical: false)
         } else {
             Text(status(context))
         }

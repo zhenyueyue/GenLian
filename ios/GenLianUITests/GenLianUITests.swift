@@ -43,10 +43,11 @@ final class GenLianUITests: XCTestCase {
         settings.activate()
         XCTAssertEqual(settings.state, .runningForeground)
         try await Task.sleep(for: .seconds(2))
-        let image = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        image.name = "26-live-activity-system"
-        image.lifetime = .keepAlways
-        add(image)
+        captureSystem("26-live-activity-system")
+        // The Dynamic Island is a system overlay outside the app's accessibility hierarchy.
+        settings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
+        try await Task.sleep(for: .seconds(1))
+        captureSystem("26a-live-activity-expanded")
         app.activate()
         endWorkout(in: app)
         tap(AccessibilityID.Record.archive, in: app)
@@ -490,6 +491,14 @@ final class GenLianUITests: XCTestCase {
     @MainActor
     private func capture(_ name: String, in app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    @MainActor
+    private func captureSystem(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)

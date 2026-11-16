@@ -72,7 +72,7 @@ def report_ui_tests(results, outcome):
             "19-accessibility-archived", "19a-accessibility-history-detail",
             "20-shoulder-press-player", "22-real-clock-summary",
             "23-background-resumed", "24-cold-recovery",
-            "25-coach-settings", "26-live-activity-system",
+            "25-coach-settings", "26-live-activity-system", "26a-live-activity-expanded",
         }
         missing = required - {path.stem for path in screenshots.glob("*.png")}
         if missing:
