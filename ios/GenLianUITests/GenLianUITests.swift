@@ -2,6 +2,75 @@ import XCTest
 
 final class GenLianUITests: XCTestCase {
     @MainActor
+    func testBackgroundKeepsActionRunningAndHonorsExplicitPause() async throws {
+        let app = launch(freezeClock: false)
+        tap(AccessibilityID.Dock.start, in: app)
+        let movement = AccessibilityID.Player.exercise("ex-floor-press")
+        _ = ready(movement, in: app, timeout: 20)
+        tap(AccessibilityID.Player.increase, in: app)
+        expectLabel(AccessibilityID.Player.complete, containing: "13 次", in: app)
+
+        let actionTime = ready(AccessibilityID.Player.actionTime, in: app)
+        let before = clockSeconds(actionTime.label)
+        try await background(app, for: .seconds(10))
+        _ = ready(movement, in: app)
+        let after = clockSeconds(actionTime.label)
+        XCTAssertGreaterThanOrEqual(after - before, 10)
+        expectLabel(AccessibilityID.Player.status, containing: "动作 1/4", in: app)
+        expectLabel(AccessibilityID.Player.complete, containing: "13 次", in: app)
+        XCTAssertFalse(element(AccessibilityID.Player.resume, in: app).exists)
+        capture("23-background-resumed", in: app)
+
+        try await background(app, for: .seconds(2))
+        _ = ready(movement, in: app)
+        XCTAssertGreaterThanOrEqual(clockSeconds(actionTime.label) - after, 2)
+
+        tap(AccessibilityID.Player.pause, in: app)
+        let pause = ready(AccessibilityID.Player.pauseStatus, in: app)
+        let frozen = clockSeconds(pause.value as? String ?? "")
+        try await background(app, for: .seconds(3))
+        expectLabel(AccessibilityID.Player.pauseStatus, containing: "主动暂停", in: app)
+        XCTAssertEqual(clockSeconds(pause.value as? String ?? ""), frozen)
+        tap(AccessibilityID.Player.resume, in: app)
+        tap(AccessibilityID.Player.complete, in: app)
+        endWorkout(in: app)
+        expectLabel(AccessibilityID.Record.groups, containing: "1/15", in: app)
+        print("Background lifecycle (seconds): current action \(before) → \(after) after 10 seconds away; explicit pause held at \(frozen).")
+    }
+
+    @MainActor
+    func testTerminatedSessionRequiresConfirmationAndPreservesDraft() {
+        let app = launch()
+        tap(AccessibilityID.Dock.start, in: app)
+        tap(AccessibilityID.Player.prepare, in: app)
+        tap(AccessibilityID.Player.increase, in: app)
+        expectLabel(AccessibilityID.Player.complete, containing: "13 次", in: app)
+
+        app.terminate()
+        app.launch()
+        tap(AccessibilityID.Dock.start, in: app)
+        expectLabel(AccessibilityID.Player.pauseStatus, containing: "本次训练已暂存", in: app)
+        capture("24-cold-recovery", in: app)
+        tap(AccessibilityID.Player.resume, in: app)
+        _ = ready(AccessibilityID.Player.exercise("ex-floor-press"), in: app)
+        expectLabel(AccessibilityID.Player.complete, containing: "13 次", in: app)
+        XCTAssertEqual(clockSeconds(ready(AccessibilityID.Player.actionTime, in: app).label), 0)
+        tap(AccessibilityID.Player.complete, in: app)
+        endWorkout(in: app)
+        expectLabel(AccessibilityID.Record.groups, containing: "1/15", in: app)
+    }
+
+    @MainActor
+    private func background(_ app: XCUIApplication, for duration: Duration) async throws {
+        XCUIDevice.shared.press(.home)
+        XCTAssertTrue([.runningBackground, .runningBackgroundSuspended].contains(app.state))
+        try await Task.sleep(for: duration)
+        XCTAssertTrue([.runningBackground, .runningBackgroundSuspended].contains(app.state))
+        app.activate()
+        XCTAssertEqual(app.state, .runningForeground)
+    }
+
+    @MainActor
     func testStrengthAArchivesBothSidesAndSurvivesRelaunch() {
         let app = launch()
         let title = ready(AccessibilityID.Today.title, in: app)

@@ -104,7 +104,7 @@ private struct TrainingShell: View {
             }
         }
         .onChange(of: scenePhase, initial: true) { _, value in
-            model.setSceneActive(value == .active)
+            model.setScenePhase(value)
         }
         .task(id: scenePhase) {
             model.open()

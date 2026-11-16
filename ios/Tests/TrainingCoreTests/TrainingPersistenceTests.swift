@@ -4,21 +4,126 @@ import Testing
 
 @Suite @MainActor
 struct TrainingPersistenceTests {
-    @Test func interruptionFreezesActiveTimeAndInProcessClockIgnoresWallShift() throws {
+    @Test(arguments: [10.0, 90.0])
+    func backgroundAndLockWindowsPreserveCurrentSideAndUseMonotonicTime(awaySeconds: TimeInterval) throws {
+        let fixture = try WorkoutFixture("strength-a")
+        try fixture.startMove()
+        try fixture.completeTarget()
+        try fixture.enterRest()
+        try fixture.skipRest()
+        try fixture.startMove()
+        try fixture.completeTarget()
+        let key = try fixture.current().currentKey
+        let draft = SetDraft(measurement: .repetitions(9), load: .measuredPerDumbbell(grams: 3300))
+        try #require(try fixture.send(.updateDraft(key, draft)))
+        try fixture.tick(7, wallSeconds: -3600)
+        let before = try fixture.current()
+        #expect(before.side == .right)
+        try fixture.controller.becomeInactive()
+        try fixture.controller.enterBackground()
+        fixture.clock.advance(awaySeconds, wallSeconds: 7200)
+        try fixture.controller.tick()
+        #expect(try fixture.current().currentActionSeconds == 7)
+        try fixture.controller.becomeInactive()
+        try fixture.controller.returnToForeground()
+        try fixture.controller.returnToForeground()
+        let after = try fixture.current()
+        #expect(after.phase == .active)
+        #expect(!after.needsResume && !after.isPaused)
+        #expect(after.currentKey == key)
+        #expect(after.currentDraft == draft)
+        #expect(after.currentResult == SetResult(.repetitions(9), load: .measuredPerDumbbell(grams: 3300)))
+        #expect(after.currentActionSeconds == 7 + awaySeconds)
+        #expect(after.activitySeconds == before.activitySeconds + awaySeconds)
+        #expect(after.elapsedSeconds == before.elapsedSeconds + awaySeconds)
+        #expect(after.pausedSeconds == 0)
+        #expect(after.loggedSets == before.loggedSets && after.skippedSets == before.skippedSets)
+        try fixture.tick(3)
+        #expect(try fixture.current().currentActionSeconds == 10 + awaySeconds)
+    }
+
+    @Test func repeatedInactiveAndBackgroundCallbacksSettleEachIntervalOnce() throws {
         let fixture = try WorkoutFixture()
         try fixture.startMove()
-        try fixture.tick(7, wallSeconds: -3600)
-        try fixture.controller.enterBackground()
-        fixture.clock.advance(75, wallSeconds: 7200)
+        try fixture.tick(5)
+
+        try fixture.controller.becomeInactive()
+        fixture.clock.advance(2)
+        try fixture.controller.becomeInactive()
         try fixture.controller.tick()
+        #expect(try fixture.current().elapsedSeconds == 5)
+        try fixture.controller.returnToForeground()
+        #expect(try fixture.current().elapsedSeconds == 7)
+
+        for _ in 0..<3 {
+            try fixture.controller.becomeInactive()
+            fixture.clock.advance(1)
+            try fixture.controller.enterBackground()
+            fixture.clock.advance(10)
+            try fixture.controller.enterBackground()
+            try fixture.controller.becomeInactive()
+            try fixture.controller.returnToForeground()
+            try fixture.controller.returnToForeground()
+        }
+        #expect(try fixture.current().elapsedSeconds == 40)
+        #expect(try fixture.current().activitySeconds == 40)
+        #expect(try fixture.current().pausedSeconds == 0)
+        #expect(try fixture.current().loggedSets.isEmpty)
+        #expect(try !fixture.current().needsResume)
+    }
+
+    @Test func failedLifecycleSavesKeepClockAnchorForRetry() throws {
+        let fixture = try WorkoutFixture()
+        try fixture.startMove()
+        fixture.clock.advance(2)
+        fixture.store.failNextSave = true
+        #expect(throws: SaveFailure.self) { try fixture.controller.enterBackground() }
+        #expect(try fixture.current().elapsedSeconds == 0)
+        #expect(try !fixture.send(.pause))
+
+        fixture.clock.advance(3)
+        try fixture.controller.enterBackground()
+        #expect(try fixture.current().elapsedSeconds == 5)
+        fixture.clock.advance(7)
+        fixture.store.failNextSave = true
+        #expect(throws: SaveFailure.self) { try fixture.controller.returnToForeground() }
+        #expect(try fixture.current().elapsedSeconds == 5)
+        #expect(fixture.store.saved.current?.elapsedSeconds == 5)
+        fixture.clock.advance(1)
         try fixture.controller.returnToForeground()
         try fixture.controller.returnToForeground()
-        #expect(try fixture.current().needsResume)
-        #expect(try fixture.current().activitySeconds == 7)
-        #expect(try !fixture.send(.complete(fixture.current().currentKey, SetResult(.seconds(30)))))
-        #expect(try fixture.send(.resume))
-        try fixture.tick(3)
-        #expect(try fixture.current().activitySeconds == 10)
+        #expect(try fixture.current().elapsedSeconds == 13)
+        #expect(fixture.store.saved.current?.elapsedSeconds == 13)
+    }
+
+    @Test func backgroundKeepsSetConfirmationAndNextActionUnchanged() throws {
+        let fixture = try WorkoutFixture()
+        try fixture.startMove()
+        try fixture.completeTarget()
+        try fixture.completeTarget()
+        let confirmed = try fixture.current().loggedSets
+        try fixture.controller.enterBackground()
+        fixture.clock.advance(60)
+        try fixture.controller.returnToForeground()
+        #expect(try fixture.current().phase == .setComplete)
+        #expect(try fixture.current().countdownSeconds == 4)
+        #expect(try fixture.current().loggedSets == confirmed)
+        try fixture.enterRest()
+
+        try fixture.controller.enterBackground()
+        fixture.clock.advance(60)
+        try fixture.controller.returnToForeground()
+        #expect(try fixture.current().phase == .nextTransition)
+        let next = try fixture.current().currentKey
+        try fixture.controller.enterBackground()
+        fixture.clock.advance(60)
+        try fixture.controller.returnToForeground()
+        #expect(try fixture.current().currentKey == next)
+        #expect(try fixture.current().phase == .nextTransition)
+        #expect(try fixture.current().countdownSeconds == 2)
+        #expect(try fixture.current().loggedSets.count == 2)
+        #expect(try fixture.current().activitySeconds == 0)
+        #expect(try fixture.current().skippedSets.isEmpty)
     }
 
     @Test func explicitPauseFreezesRestAcrossBackground() throws {
@@ -94,15 +199,46 @@ struct TrainingPersistenceTests {
         try fixture.startMove()
         try fixture.completeTarget()
         try fixture.tick(15)
-        fixture.clock.advance(9)
-        let relaunched = try TrainingController(store: fixture.store, clock: fixture.clock)
+        let draft = SetDraft(measurement: .seconds(12))
+        try #require(try fixture.send(.updateDraft(fixture.current().currentKey, draft)))
+        try fixture.controller.enterBackground()
+        let newProcessClock = TestClock(date: fixture.clock.sample().date.addingTimeInterval(86_400))
+        let relaunched = try TrainingController(store: fixture.store, clock: newProcessClock)
         let recovered = try #require(relaunched.archive.current)
         #expect(recovered.id == fixture.id)
         #expect(recovered.needsResume)
         #expect(recovered.side == .right)
         #expect(recovered.activitySeconds == 15)
+        #expect(recovered.elapsedSeconds == 15)
+        #expect(recovered.currentActionSeconds == 15)
+        #expect(recovered.currentDraft == draft)
         #expect(recovered.loggedSets.count == 1)
         #expect(recovered.loggedSets.first?.key.side == .left)
+        try #require(try relaunched.send(.resume, for: recovered.id))
+        newProcessClock.advance(2)
+        try relaunched.tick()
+        #expect(relaunched.archive.current?.currentActionSeconds == 17)
+    }
+
+    @Test func coldManualRestCreditsOnlyScheduledRemainder() throws {
+        let fixture = try WorkoutFixture(rest: RestSettings(exerciseSeconds: 20, roundSeconds: 30, autoAdvance: false))
+        try fixture.startMove()
+        try fixture.completeTarget()
+        try fixture.completeTarget()
+        try fixture.enterRest()
+        try fixture.tick(8)
+        try fixture.controller.enterBackground()
+        let coldClock = TestClock(date: fixture.clock.sample().date.addingTimeInterval(86_400))
+        let relaunched = try TrainingController(store: fixture.store, clock: coldClock)
+        #expect(relaunched.archive.current?.phase == .restReady)
+        #expect(relaunched.archive.current?.rest?.actualSeconds == 20)
+        #expect(relaunched.archive.current?.elapsedSeconds == 20)
+        #expect(relaunched.archive.current?.activitySeconds == 0)
+        coldClock.advance(86_400)
+        let reopened = try TrainingController(store: fixture.store, clock: coldClock)
+        #expect(reopened.archive.current?.phase == .restReady)
+        #expect(reopened.archive.current?.elapsedSeconds == 20)
+        #expect(reopened.archive.current?.loggedSets.count == 2)
     }
 
     @Test func savedForLaterResumesSameSideFromDiskThenArchivesOnce() throws {
@@ -172,6 +308,11 @@ struct TrainingPersistenceTests {
             measurement: .repetitions(9), load: .measuredPerDumbbell(grams: 3300)
         ))))
         try #require(try fixture.send(.saveForLater))
+        try fixture.controller.enterBackground()
+        fixture.clock.advance(120)
+        try fixture.controller.returnToForeground()
+        #expect(try fixture.current().needsResume)
+        #expect(try fixture.current().currentActionSeconds == 4)
         fixture.clock.advance(300)
         let reopened = try TrainingController(store: fixture.store, clock: fixture.clock)
         let current = try #require(reopened.archive.current)

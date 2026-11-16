@@ -374,13 +374,7 @@ public struct WorkoutSession: Codable, Equatable, Identifiable, Sendable {
         while budget > 0 {
             switch phase {
             case .active:
-                elapsedSeconds += budget
-                if reviewPosition == nil {
-                    activitySeconds += budget
-                    var durations = setActivity ?? [:]
-                    durations[currentKey, default: 0] += budget
-                    setActivity = durations
-                }
+                advanceAction(by: budget)
                 return
             case .summary:
                 return
@@ -405,16 +399,47 @@ public struct WorkoutSession: Codable, Equatable, Identifiable, Sendable {
         }
     }
 
-    // On a suspended scene only rest or an explicit pause elapses.
     mutating func advanceWhileAway(by seconds: TimeInterval, at date: Date) {
-        guard phase != .summary else { return }
+        guard phase != .summary, !needsResume, seconds > 0 else { return }
         if isPaused {
             pausedSeconds += seconds
-        } else if !needsResume, phase == .rest || phase == .restReady {
+            return
+        }
+        // Only the current action or rest can consume an away interval. Confirmation and transition wait for the UI.
+        switch phase {
+        case .active:
+            advanceAction(by: seconds)
+        case .rest, .restReady:
             _ = advanceRest(by: seconds, at: date)
-        } else {
+        case .prepare, .setComplete, .nextTransition, .summary:
+            break
+        }
+    }
+
+    mutating func recoverAfterProcessExit(at date: Date) {
+        guard !isPaused, !needsResume else { return }
+        switch phase {
+        case .rest:
+            // Wall time cannot prove that exercise continued after process exit. Only credit the scheduled rest left.
+            let waiting = max(0, date.timeIntervalSince(checkpointAt))
+            let remaining = rest?.remainingSeconds ?? 0
+            if waiting > 0 {
+                _ = advanceRest(by: min(waiting, remaining), at: date)
+            }
+        case .restReady, .summary:
+            break
+        case .prepare, .active, .setComplete, .nextTransition:
             needsResume = true
         }
+    }
+
+    private mutating func advanceAction(by seconds: TimeInterval) {
+        elapsedSeconds += seconds
+        guard reviewPosition == nil else { return }
+        activitySeconds += seconds
+        var durations = setActivity ?? [:]
+        durations[currentKey, default: 0] += seconds
+        setActivity = durations
     }
 
     private mutating func advanceRest(by seconds: TimeInterval, at date: Date) -> TimeInterval {

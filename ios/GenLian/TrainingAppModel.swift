@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import Observation
+import SwiftUI
 import TrainingCore
 
 struct PlanSetup: Codable, Equatable {
@@ -24,7 +25,7 @@ final class TrainingAppModel {
     var errorMessage: String?
     private var preferences = TrainingPreferences()
     @ObservationIgnored private var controller: TrainingController?
-    @ObservationIgnored private var sceneActive = false
+    @ObservationIgnored private var scenePhase: ScenePhase = .inactive
     @ObservationIgnored private let voice = TrainingVoice()
     @ObservationIgnored private let defaults: UserDefaults
     private static let preferencesKey = "genlian.training-preferences"
@@ -53,7 +54,7 @@ final class TrainingAppModel {
             #else
             let sessionController = try TrainingController(store: AtomicTrainingStore.applicationSupport())
             #endif
-            if !sceneActive { try sessionController.enterBackground() }
+            try applyScenePhase(to: sessionController)
             controller = sessionController
             archive = sessionController.archive
             available = true
@@ -108,10 +109,10 @@ final class TrainingAppModel {
         perform { try $0.archiveFinished(id) }
     }
 
-    func setSceneActive(_ active: Bool) {
-        guard sceneActive != active else { return }
-        sceneActive = active
-        if !active { voice.stop() }
+    func setScenePhase(_ phase: ScenePhase) {
+        guard scenePhase != phase else { return }
+        scenePhase = phase
+        if phase != .active { voice.stop() }
         synchronizeScene()
     }
 
@@ -122,17 +123,22 @@ final class TrainingAppModel {
 
     private func synchronizeScene() {
         _ = perform(announce: false) {
-            if sceneActive {
-                try $0.returnToForeground()
-            } else {
-                try $0.enterBackground()
-            }
+            try applyScenePhase(to: $0)
             return true
         }
     }
 
+    private func applyScenePhase(to controller: TrainingController) throws {
+        switch scenePhase {
+        case .active: try controller.returnToForeground()
+        case .inactive: try controller.becomeInactive()
+        case .background: try controller.enterBackground()
+        @unknown default: try controller.becomeInactive()
+        }
+    }
+
     func tick() {
-        guard sceneActive, archive.current != nil, errorMessage == nil else { return }
+        guard scenePhase == .active, archive.current != nil, errorMessage == nil else { return }
         _ = perform {
             try $0.tick()
             return true
@@ -153,7 +159,7 @@ final class TrainingAppModel {
             let updated = controller.archive
             if updated != archive { archive = updated }
             if applied && announce { errorMessage = nil }
-            if announce && sceneActive && voiceEnabled {
+            if announce && scenePhase == .active && voiceEnabled {
                 voice.transition(from: previous, to: updated.current)
             }
             return applied

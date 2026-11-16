@@ -61,8 +61,8 @@ def report_ui_tests(results, outcome):
             if match and source.suffix.lower() == ".png":
                 shutil.copyfile(source, screenshots / f"{match[1]}.png")
     if outcome == "success":
-        if passed < 4 or failed or skipped:
-            raise SystemExit("The four required GenLian UI tests did not all pass.")
+        if passed < 6 or failed or skipped:
+            raise SystemExit("The six required GenLian UI tests did not all pass.")
         required = {
             "01-today", "02-workout-detail", "03-training-setup", "04-strength-player",
             "05-between-set-rest", "06-workout-summary", "07-training-history", "08-history-detail",
@@ -70,6 +70,7 @@ def report_ui_tests(results, outcome):
             "17-accessibility-rest", "17b-accessibility-rest-next", "18-accessibility-summary-bottom",
             "19-accessibility-archived", "19a-accessibility-history-detail",
             "20-shoulder-press-player", "22-real-clock-summary",
+            "23-background-resumed", "24-cold-recovery",
         }
         missing = required - {path.stem for path in screenshots.glob("*.png")}
         if missing:

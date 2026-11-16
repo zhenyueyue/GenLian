@@ -35,12 +35,16 @@ public enum TrainingError: Error, Equatable {
 /// Owns the active session and publishes a change only after its required save succeeds.
 @MainActor
 public final class TrainingController {
+    private enum Visibility: Equatable {
+        case active, inactive, background
+    }
+
     public private(set) var archive: TrainingArchive
     private let store: any TrainingStore
     private let clock: any WorkoutClock
     private var lastSample: WorkoutTime
     private var lastSaveSeconds: TimeInterval
-    private var inBackground = false
+    private var visibility: Visibility = .active
     private let checkpointInterval: TimeInterval = 15
 
     public init(store: any TrainingStore, clock: any WorkoutClock = SystemWorkoutClock()) throws {
@@ -52,7 +56,7 @@ public final class TrainingController {
         archive = try store.load()
         if let stored = archive.current, stored.phase != .summary {
             var recovered = stored
-            recovered.advanceWhileAway(by: max(0, now.date.timeIntervalSince(stored.checkpointAt)), at: now.date)
+            recovered.recoverAfterProcessExit(at: now.date)
             if recovered != stored {
                 var next = archive
                 next.current = recovered
@@ -65,7 +69,7 @@ public final class TrainingController {
     public func start(
         _ plan: WorkoutPlan, rest: RestSettings? = nil, load: RecordedLoad? = nil, timeZone: TimeZone = .current
     ) throws -> Bool {
-        guard !inBackground, archive.current == nil else { return false }
+        guard visibility == .active, archive.current == nil else { return false }
         guard plan.isValid else { throw TrainingError.invalidPlan }
         let now = clock.sample()
         var next = archive
@@ -85,44 +89,40 @@ public final class TrainingController {
 
     @discardableResult
     public func send(_ action: WorkoutAction, for sessionID: UUID) throws -> Bool {
-        guard !inBackground, archive.current?.id == sessionID else { return false }
+        guard visibility == .active, archive.current?.id == sessionID else { return false }
         return try updateForeground(at: clock.sample(), action: action)
     }
 
     public func tick() throws {
-        guard !inBackground else { return }
+        guard visibility == .active else { return }
         try updateForeground(at: clock.sample())
     }
 
+    public func becomeInactive() throws {
+        guard visibility == .active else { return }
+        try leaveInteractiveScene(at: clock.sample(), forceSave: false)
+    }
+
     public func enterBackground() throws {
-        guard !inBackground else { return }
+        guard visibility != .background else { return }
         let now = clock.sample()
-        defer {
-            inBackground = true
-            lastSample = now
+        if visibility == .active {
+            try leaveInteractiveScene(at: now, forceSave: true)
+        } else {
+            try settleAway(at: now, forceSave: true)
         }
-        try updateForeground(at: now, forceSave: true)
+        visibility = .background
     }
 
     public func returnToForeground() throws {
-        guard inBackground else { return }
-        let now = clock.sample()
-        if let current = archive.current, current.phase != .summary {
-            var updated = current
-            updated.advanceWhileAway(by: elapsed(at: now), at: now.date)
-            if updated != current {
-                var next = archive
-                next.current = updated
-                try commit(next, at: now)
-            }
-        }
-        inBackground = false
-        lastSample = now
+        guard visibility != .active else { return }
+        try settleAway(at: clock.sample())
+        visibility = .active
     }
 
     @discardableResult
     public func archiveFinished(_ sessionID: UUID) throws -> Bool {
-        guard !inBackground, let current = archive.current,
+        guard visibility == .active, let current = archive.current,
               current.id == sessionID, current.phase == .summary,
               !archive.history.contains(where: { $0.id == sessionID }) else { return false }
         let now = clock.sample()
@@ -131,6 +131,25 @@ public final class TrainingController {
         next.history.insert(current, at: 0)
         try commit(next, at: now)
         return true
+    }
+
+    private func leaveInteractiveScene(at now: WorkoutTime, forceSave: Bool) throws {
+        // Stop foreground work even if the write fails. Keep the last successful clock anchor for retry.
+        defer { visibility = .inactive }
+        try updateForeground(at: now, forceSave: forceSave)
+    }
+
+    private func settleAway(at now: WorkoutTime, forceSave: Bool = false) throws {
+        if let current = archive.current, current.phase != .summary {
+            var updated = current
+            updated.advanceWhileAway(by: elapsed(at: now), at: now.date)
+            if updated != current || forceSave {
+                var next = archive
+                next.current = updated
+                try commit(next, at: now)
+            }
+        }
+        lastSample = now
     }
 
     @discardableResult
