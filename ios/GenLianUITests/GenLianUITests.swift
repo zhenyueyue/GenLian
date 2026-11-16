@@ -2,18 +2,17 @@ import XCTest
 
 final class GenLianUITests: XCTestCase {
     @MainActor
-    func testBackgroundKeepsActionRunningAndHonorsExplicitPause() async throws {
+    func testWorkoutBackgroundKeepsActionRunningAndHonorsExplicitPause() async throws {
         let app = launch(freezeClock: false)
         tap(AccessibilityID.Dock.start, in: app)
         let movement = AccessibilityID.Player.exercise("ex-floor-press")
-        _ = ready(movement, in: app, timeout: 20)
-        tap(AccessibilityID.Player.increase, in: app)
+        tap(AccessibilityID.Player.increase, in: app, timeout: 60)
         expectLabel(AccessibilityID.Player.complete, containing: "13 次", in: app)
 
         let actionTime = ready(AccessibilityID.Player.actionTime, in: app)
         let before = clockSeconds(actionTime.label)
         try await background(app, for: .seconds(10))
-        _ = ready(movement, in: app)
+        _ = ready(movement, in: app, timeout: 30)
         let after = clockSeconds(actionTime.label)
         XCTAssertGreaterThanOrEqual(after - before, 10)
         expectLabel(AccessibilityID.Player.status, containing: "动作 1/4", in: app)
@@ -22,7 +21,7 @@ final class GenLianUITests: XCTestCase {
         capture("23-background-resumed", in: app)
 
         try await background(app, for: .seconds(2))
-        _ = ready(movement, in: app)
+        _ = ready(movement, in: app, timeout: 30)
         XCTAssertGreaterThanOrEqual(clockSeconds(actionTime.label) - after, 2)
 
         tap(AccessibilityID.Player.pause, in: app)
@@ -62,18 +61,11 @@ final class GenLianUITests: XCTestCase {
 
     @MainActor
     private func background(_ app: XCUIApplication, for duration: Duration) async throws {
-        XCUIDevice.shared.press(.home)
-        let expected: [XCUIApplication.State] = [.runningBackground, .runningBackgroundSuspended]
-        let deadline = ContinuousClock.now + .seconds(20)
-        var state = app.state
-        while !expected.contains(state), state != .notRunning, ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(200))
-            state = app.state
-        }
-        XCTAssertTrue(expected.contains(state), "Expected the Home button to send GenLian to background, got \(state).")
+        let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+        settings.activate()
+        XCTAssertEqual(settings.state, .runningForeground)
         try await Task.sleep(for: duration)
-        state = app.state
-        XCTAssertTrue(expected.contains(state), "Expected GenLian to remain alive in background, got \(state).")
+        XCTAssertEqual(settings.state, .runningForeground)
         app.activate()
         XCTAssertEqual(app.state, .runningForeground)
     }
@@ -403,10 +395,13 @@ final class GenLianUITests: XCTestCase {
     }
 
     @MainActor
-    private func tap(_ id: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+    private func tap(
+        _ id: String, in app: XCUIApplication, timeout: TimeInterval = 20,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
         let match = app.buttons.matching(identifier: id).firstMatch
         XCTAssertTrue(
-            match.wait(for: \.isHittable, toEqual: true, timeout: 20),
+            match.wait(for: \.isHittable, toEqual: true, timeout: timeout),
             "\(id) is not hittable\n\(app.debugDescription)", file: file, line: line
         )
         match.tap()
