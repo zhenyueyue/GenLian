@@ -24,6 +24,16 @@
 		26E00000000000000000008C /* UITestLaunch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E00000000000000000007C /* UITestLaunch.swift */; };
 		26E000000000000000000090 /* GenLianUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E00000000000000000007D /* GenLianUITests.swift */; };
 		26E000000000000000000091 /* AccessibilityID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E00000000000000000007B /* AccessibilityID.swift */; };
+		26E0000000000000000000B0 /* VoiceCoachService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A0 /* VoiceCoachService.swift */; };
+		26E0000000000000000000B1 /* TrainingNotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A1 /* TrainingNotificationScheduler.swift */; };
+		26E0000000000000000000B2 /* TrainingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A2 /* TrainingActivityAttributes.swift */; };
+		26E0000000000000000000B3 /* TrainingLiveActivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A3 /* TrainingLiveActivityService.swift */; };
+		26E0000000000000000000B4 /* TrainingCoachCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A4 /* TrainingCoachCoordinator.swift */; };
+		26E0000000000000000000B5 /* VoiceCoachSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A5 /* VoiceCoachSettingsView.swift */; };
+		26E0000000000000000000B6 /* TrainingLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A6 /* TrainingLiveActivityWidget.swift */; };
+		26E0000000000000000000B7 /* TrainingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A2 /* TrainingActivityAttributes.swift */; };
+		26E0000000000000000000B8 /* GenLianWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 26E0000000000000000000A7 /* GenLianWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		26E0000000000000000000B9 /* TrainingCoach in Frameworks */ = {isa = PBXBuildFile; productRef = 26E0000000000000000000C7 /* TrainingCoach */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,7 +44,26 @@
 			remoteGlobalIDString = 26E000000000000000000040;
 			remoteInfo = GenLian;
 		};
+		26E0000000000000000000C0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 26E000000000000000000041 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 26E000000000000000000043;
+			remoteInfo = GenLianWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		26E0000000000000000000C2 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (26E0000000000000000000B8 /* GenLianWidget.appex in Embed App Extensions */,);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		26E000000000000000000011 /* GenLianApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenLianApp.swift; sourceTree = "<group>"; };
@@ -56,13 +85,21 @@
 		26E00000000000000000007C /* UITestLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestLaunch.swift; sourceTree = "<group>"; };
 		26E00000000000000000007D /* GenLianUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenLianUITests.swift; sourceTree = "<group>"; };
 		26E00000000000000000007E /* GenLianUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GenLianUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		26E0000000000000000000A0 /* VoiceCoachService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCoachService.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A1 /* TrainingNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingNotificationScheduler.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A2 /* TrainingActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingActivityAttributes.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A3 /* TrainingLiveActivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingLiveActivityService.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A4 /* TrainingCoachCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingCoachCoordinator.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A5 /* VoiceCoachSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCoachSettingsView.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A6 /* TrainingLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingLiveActivityWidget.swift; sourceTree = "<group>"; };
+		26E0000000000000000000A7 /* GenLianWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GenLianWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		26E000000000000000000021 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
-			files = (26E000000000000000000003 /* TrainingCore in Frameworks */,);
+			files = (26E000000000000000000003 /* TrainingCore in Frameworks */, 26E0000000000000000000B9 /* TrainingCoach in Frameworks */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -70,18 +107,18 @@
 /* Begin PBXGroup section */
 		26E000000000000000000031 = {
 			isa = PBXGroup;
-			children = (26E000000000000000000032 /* GenLian */, 26E000000000000000000034 /* GenLianUITests */, 26E000000000000000000033 /* Products */,);
+			children = (26E000000000000000000032 /* GenLian */, 26E000000000000000000034 /* GenLianUITests */, 26E000000000000000000035 /* GenLianWidget */, 26E000000000000000000033 /* Products */,);
 			sourceTree = "<group>";
 		};
 		26E000000000000000000032 /* GenLian */ = {
 			isa = PBXGroup;
-			children = (26E000000000000000000011 /* GenLianApp.swift */, 26E000000000000000000012 /* Assets.xcassets */, 26E000000000000000000070 /* TrainingAppModel.swift */, 26E000000000000000000071 /* WarmDesign.swift */, 26E000000000000000000072 /* WarmMedia.swift */, 26E000000000000000000073 /* TodayView.swift */, 26E000000000000000000074 /* WorkoutDetailView.swift */, 26E000000000000000000075 /* TrainingSetupView.swift */, 26E000000000000000000076 /* WorkoutPlayerView.swift */, 26E000000000000000000077 /* WorkoutRestView.swift */, 26E000000000000000000078 /* WorkoutReportViews.swift */, 26E000000000000000000079 /* TrainingHistoryView.swift */, 26E00000000000000000007A /* TrainingMonthView.swift */, 26E00000000000000000007B /* AccessibilityID.swift */, 26E00000000000000000007C /* UITestLaunch.swift */, 26E000000000000000000014 /* GenLian.xcconfig */,);
+			children = (26E000000000000000000011 /* GenLianApp.swift */, 26E000000000000000000012 /* Assets.xcassets */, 26E000000000000000000070 /* TrainingAppModel.swift */, 26E000000000000000000071 /* WarmDesign.swift */, 26E000000000000000000072 /* WarmMedia.swift */, 26E000000000000000000073 /* TodayView.swift */, 26E000000000000000000074 /* WorkoutDetailView.swift */, 26E000000000000000000075 /* TrainingSetupView.swift */, 26E000000000000000000076 /* WorkoutPlayerView.swift */, 26E000000000000000000077 /* WorkoutRestView.swift */, 26E000000000000000000078 /* WorkoutReportViews.swift */, 26E000000000000000000079 /* TrainingHistoryView.swift */, 26E00000000000000000007A /* TrainingMonthView.swift */, 26E00000000000000000007B /* AccessibilityID.swift */, 26E00000000000000000007C /* UITestLaunch.swift */, 26E0000000000000000000A0 /* VoiceCoachService.swift */, 26E0000000000000000000A1 /* TrainingNotificationScheduler.swift */, 26E0000000000000000000A2 /* TrainingActivityAttributes.swift */, 26E0000000000000000000A3 /* TrainingLiveActivityService.swift */, 26E0000000000000000000A4 /* TrainingCoachCoordinator.swift */, 26E0000000000000000000A5 /* VoiceCoachSettingsView.swift */, 26E000000000000000000014 /* GenLian.xcconfig */,);
 			path = GenLian;
 			sourceTree = "<group>";
 		};
 		26E000000000000000000033 /* Products */ = {
 			isa = PBXGroup;
-			children = (26E000000000000000000013 /* GenLian.app */, 26E00000000000000000007E /* GenLianUITests.xctest */,);
+			children = (26E000000000000000000013 /* GenLian.app */, 26E00000000000000000007E /* GenLianUITests.xctest */, 26E0000000000000000000A7 /* GenLianWidget.appex */,);
 			name = Products;
 			sourceTree = "<group>";
 		};
@@ -91,17 +128,23 @@
 			path = GenLianUITests;
 			sourceTree = "<group>";
 		};
+		26E000000000000000000035 /* GenLianWidget */ = {
+			isa = PBXGroup;
+			children = (26E0000000000000000000A6 /* TrainingLiveActivityWidget.swift */,);
+			path = GenLianWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		26E000000000000000000040 /* GenLian */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 26E000000000000000000053 /* Build configuration list for PBXNativeTarget "GenLian" */;
-			buildPhases = (26E000000000000000000022 /* Sources */, 26E000000000000000000021 /* Frameworks */, 26E000000000000000000023 /* Resources */,);
+			buildPhases = (26E000000000000000000022 /* Sources */, 26E000000000000000000021 /* Frameworks */, 26E000000000000000000023 /* Resources */, 26E0000000000000000000C2 /* Embed App Extensions */,);
 			buildRules = ();
-			dependencies = ();
+			dependencies = (26E0000000000000000000C1 /* PBXTargetDependency */,);
 			name = GenLian;
-			packageProductDependencies = (26E000000000000000000061 /* TrainingCore */,);
+			packageProductDependencies = (26E000000000000000000061 /* TrainingCore */, 26E0000000000000000000C7 /* TrainingCoach */,);
 			productName = GenLian;
 			productReference = 26E000000000000000000013 /* GenLian.app */;
 			productType = "com.apple.product-type.application";
@@ -116,6 +159,17 @@
 			productName = GenLianUITests;
 			productReference = 26E00000000000000000007E /* GenLianUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		26E000000000000000000043 /* GenLianWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 26E0000000000000000000C4 /* Build configuration list for PBXNativeTarget "GenLianWidget" */;
+			buildPhases = (26E0000000000000000000C3 /* Sources */,);
+			buildRules = ();
+			dependencies = ();
+			name = GenLianWidget;
+			productName = GenLianWidget;
+			productReference = 26E0000000000000000000A7 /* GenLianWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -140,7 +194,7 @@
 			productRefGroup = 26E000000000000000000033 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
-			targets = (26E000000000000000000040 /* GenLian */, 26E000000000000000000042 /* GenLianUITests */,);
+			targets = (26E000000000000000000040 /* GenLian */, 26E000000000000000000042 /* GenLianUITests */, 26E000000000000000000043 /* GenLianWidget */,);
 		};
 /* End PBXProject section */
 
@@ -157,13 +211,19 @@
 		26E000000000000000000022 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (26E000000000000000000001 /* GenLianApp.swift in Sources */, 26E00000000000000000008A /* TrainingMonthView.swift in Sources */, 26E000000000000000000089 /* TrainingHistoryView.swift in Sources */, 26E000000000000000000088 /* WorkoutReportViews.swift in Sources */, 26E000000000000000000087 /* WorkoutRestView.swift in Sources */, 26E000000000000000000086 /* WorkoutPlayerView.swift in Sources */, 26E000000000000000000085 /* TrainingSetupView.swift in Sources */, 26E000000000000000000084 /* WorkoutDetailView.swift in Sources */, 26E000000000000000000083 /* TodayView.swift in Sources */, 26E000000000000000000082 /* WarmMedia.swift in Sources */, 26E000000000000000000081 /* WarmDesign.swift in Sources */, 26E000000000000000000080 /* TrainingAppModel.swift in Sources */, 26E00000000000000000008B /* AccessibilityID.swift in Sources */, 26E00000000000000000008C /* UITestLaunch.swift in Sources */,);
+			files = (26E000000000000000000001 /* GenLianApp.swift in Sources */, 26E00000000000000000008A /* TrainingMonthView.swift in Sources */, 26E000000000000000000089 /* TrainingHistoryView.swift in Sources */, 26E000000000000000000088 /* WorkoutReportViews.swift in Sources */, 26E000000000000000000087 /* WorkoutRestView.swift in Sources */, 26E000000000000000000086 /* WorkoutPlayerView.swift in Sources */, 26E000000000000000000085 /* TrainingSetupView.swift in Sources */, 26E000000000000000000084 /* WorkoutDetailView.swift in Sources */, 26E000000000000000000083 /* TodayView.swift in Sources */, 26E000000000000000000082 /* WarmMedia.swift in Sources */, 26E000000000000000000081 /* WarmDesign.swift in Sources */, 26E000000000000000000080 /* TrainingAppModel.swift in Sources */, 26E00000000000000000008B /* AccessibilityID.swift in Sources */, 26E00000000000000000008C /* UITestLaunch.swift in Sources */, 26E0000000000000000000B0 /* VoiceCoachService.swift in Sources */, 26E0000000000000000000B1 /* TrainingNotificationScheduler.swift in Sources */, 26E0000000000000000000B2 /* TrainingActivityAttributes.swift in Sources */, 26E0000000000000000000B3 /* TrainingLiveActivityService.swift in Sources */, 26E0000000000000000000B4 /* TrainingCoachCoordinator.swift in Sources */, 26E0000000000000000000B5 /* VoiceCoachSettingsView.swift in Sources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		26E000000000000000000024 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (26E000000000000000000090 /* GenLianUITests.swift in Sources */, 26E000000000000000000091 /* AccessibilityID.swift in Sources */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26E0000000000000000000C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (26E0000000000000000000B6 /* TrainingLiveActivityWidget.swift in Sources */, 26E0000000000000000000B7 /* TrainingActivityAttributes.swift in Sources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
@@ -173,6 +233,11 @@
 			isa = PBXTargetDependency;
 			target = 26E000000000000000000040 /* GenLian */;
 			targetProxy = 26E000000000000000000093 /* PBXContainerItemProxy */;
+		};
+		26E0000000000000000000C1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 26E000000000000000000043 /* GenLianWidget */;
+			targetProxy = 26E0000000000000000000C0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -242,6 +307,42 @@
 			};
 			name = Release;
 		};
+		26E0000000000000000000C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GenLianWidget/Info.plist;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.genlian.app.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		26E0000000000000000000C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GenLianWidget/Info.plist;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.genlian.app.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -263,6 +364,12 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		26E0000000000000000000C4 /* Build configuration list for PBXNativeTarget "GenLianWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (26E0000000000000000000C5 /* Debug */, 26E0000000000000000000C6 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -277,6 +384,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 26E000000000000000000060 /* XCLocalSwiftPackageReference "." */;
 			productName = TrainingCore;
+		};
+		26E0000000000000000000C7 /* TrainingCoach */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 26E000000000000000000060 /* XCLocalSwiftPackageReference "." */;
+			productName = TrainingCoach;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

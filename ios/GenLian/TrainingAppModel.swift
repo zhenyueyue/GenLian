@@ -1,7 +1,7 @@
-import AVFoundation
 import Foundation
 import Observation
 import SwiftUI
+import TrainingCoach
 import TrainingCore
 
 struct PlanSetup: Codable, Equatable {
@@ -14,6 +14,7 @@ private struct TrainingPreferences: Codable {
     var setups: [String: PlanSetup] = [:]
     var postponedUntil: [String: Date] = [:]
     var voiceEnabled = true
+    var coach: VoiceCoachPreferences?
 }
 
 @MainActor
@@ -26,16 +27,18 @@ final class TrainingAppModel {
     private var preferences = TrainingPreferences()
     @ObservationIgnored private var controller: TrainingController?
     @ObservationIgnored private var scenePhase: ScenePhase = .inactive
-    @ObservationIgnored private let voice = TrainingVoice()
+    @ObservationIgnored private let coach: TrainingCoachCoordinator
     @ObservationIgnored private let defaults: UserDefaults
     private static let preferencesKey = "genlian.training-preferences"
 
     init() {
         #if DEBUG
-        defaults = UITestLaunch.preferences()
+        let preferencesStore = UITestLaunch.preferences()
         #else
-        defaults = .standard
+        let preferencesStore = UserDefaults.standard
         #endif
+        defaults = preferencesStore
+        coach = TrainingCoachCoordinator(defaults: preferencesStore)
         if let bytes = defaults.data(forKey: Self.preferencesKey),
            let saved = try? JSONDecoder().decode(TrainingPreferences.self, from: bytes) {
             preferences = saved
@@ -43,7 +46,9 @@ final class TrainingAppModel {
     }
 
     var plan: WorkoutPlan? { plans.first { $0.id == preferences.planID } ?? plans.first }
-    var voiceEnabled: Bool { preferences.voiceEnabled }
+    var voiceEnabled: Bool { coachPreferences.enabled }
+    var coachPreferences: VoiceCoachPreferences { preferences.coach ?? .init(enabled: preferences.voiceEnabled) }
+    var coachNotifications: TrainingNotificationScheduler { coach.notifications }
 
     func open() {
         guard controller == nil else { return }
@@ -59,6 +64,8 @@ final class TrainingAppModel {
             archive = sessionController.archive
             available = true
             errorMessage = nil
+            synchronizeCoach(from: nil, announce: false)
+            refreshCoachPermissions()
         } catch {
             report(error)
         }
@@ -112,8 +119,8 @@ final class TrainingAppModel {
     func setScenePhase(_ phase: ScenePhase) {
         guard scenePhase != phase else { return }
         scenePhase = phase
-        if phase != .active { voice.stop() }
         synchronizeScene()
+        if phase == .active { refreshCoachPermissions() }
     }
 
     func acknowledgeError() {
@@ -146,9 +153,27 @@ final class TrainingAppModel {
     }
 
     func toggleVoice() {
-        preferences.voiceEnabled.toggle()
-        if !voiceEnabled { voice.stop() }
+        var value = coachPreferences
+        value.enabled.toggle()
+        setCoachPreferences(value)
+    }
+
+    func setCoachPreferences(_ value: VoiceCoachPreferences) {
+        preferences.coach = value
+        preferences.voiceEnabled = value.enabled
         savePreferences()
+        synchronizeCoach(from: nil, announce: false)
+    }
+
+    private func refreshCoachPermissions() {
+        Task { await coach.notifications.refreshPermission() }
+    }
+
+    private func synchronizeCoach(from previous: WorkoutSession?, announce: Bool) {
+        coach.synchronize(
+            from: previous, to: archive.current, preferences: coachPreferences,
+            foreground: scenePhase == .active, announce: announce
+        )
     }
 
     private func perform(announce: Bool = true, _ operation: @MainActor (TrainingController) throws -> Bool) -> Bool {
@@ -159,12 +184,11 @@ final class TrainingAppModel {
             let updated = controller.archive
             if updated != archive { archive = updated }
             if applied && announce { errorMessage = nil }
-            if announce && scenePhase == .active && voiceEnabled {
-                voice.transition(from: previous, to: updated.current)
-            }
+            synchronizeCoach(from: previous, announce: announce)
             return applied
         } catch {
             report(error)
+            synchronizeCoach(from: nil, announce: false)
             return false
         }
     }
@@ -177,38 +201,5 @@ final class TrainingAppModel {
         if let bytes = try? JSONEncoder().encode(preferences) {
             defaults.set(bytes, forKey: Self.preferencesKey)
         }
-    }
-}
-
-@MainActor
-private final class TrainingVoice {
-    private let synthesizer = AVSpeechSynthesizer()
-
-    init() { synthesizer.usesApplicationAudioSession = false }
-    func stop() { synthesizer.stopSpeaking(at: .immediate) }
-
-    func transition(from old: WorkoutSession?, to current: WorkoutSession?) {
-        guard let old, let current, old.id == current.id else { return }
-        if current.isPaused || current.needsResume {
-            stop()
-            return
-        }
-        let phrase: String
-        switch (old.phase, current.phase) {
-        case (.prepare, .active), (.nextTransition, .active):
-            phrase = "开始，\(current.currentExercise.name)"
-        case (.rest, .nextTransition), (.restReady, .nextTransition):
-            phrase = "休息结束，准备\(current.currentExercise.name)"
-        case (.active, .active) where old.side != current.side && current.loggedSets.count > old.loggedSets.count:
-            phrase = current.side == .left ? "请换左侧" : "请换右侧"
-        case (_, .summary) where old.phase != .summary && current.outcome == .completed:
-            phrase = "全部轮次已完成，辛苦了"
-        default:
-            return
-        }
-        stop()
-        let utterance = AVSpeechUtterance(string: phrase)
-        utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
-        synthesizer.speak(utterance)
     }
 }

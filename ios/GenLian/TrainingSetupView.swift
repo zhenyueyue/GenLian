@@ -9,6 +9,7 @@ struct TrainingSetupView: View {
     let start: @MainActor (PlanSetup) -> Void
     let postpone: @MainActor (PlanSetup) -> Void
     @State private var draft: PlanSetup
+    @State private var showsCoachSettings = false
     @Environment(\.dynamicTypeSize) private var typeSize
 
     init(
@@ -40,6 +41,10 @@ struct TrainingSetupView: View {
                             .warmGlass(.elevated, in: RoundedRectangle(cornerRadius: 12))
                     }
                     restSettings
+                    WarmGlassButton(title: "语音教练设置", icon: "speaker.wave.2", fillsWidth: true) {
+                        showsCoachSettings = true
+                    }
+                    .accessibilityIdentifier("coach.settings.open")
                 }
                 .padding(Warm.pageEdge)
             }
@@ -53,6 +58,7 @@ struct TrainingSetupView: View {
         .safeAreaInset(edge: .top, spacing: 0) { TrainingErrorBar(model: model) }
         .presentationDetents([.fraction(0.84), .large])
         .modifier(WarmSheetBackground())
+        .sheet(isPresented: $showsCoachSettings) { VoiceCoachSettingsView(model: model) }
     }
 
     private var postponeButton: some View {

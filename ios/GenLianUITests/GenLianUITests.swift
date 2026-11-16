@@ -2,6 +2,58 @@ import XCTest
 
 final class GenLianUITests: XCTestCase {
     @MainActor
+    func testCoachSettingsPersistAndTrainingRemainsAvailableWithoutNotificationPermission() {
+        let app = launch()
+        tap("today.setup", in: app)
+        reveal("coach.settings.open", in: app).tap()
+        _ = ready("coach.settings.title", in: app)
+        let control = app.switches["coach.enabled"].firstMatch
+        XCTAssertTrue(control.waitForExistence(timeout: 15))
+        XCTAssertEqual(control.value as? String, "1")
+        capture("25-coach-settings", in: app)
+        _ = reveal("coach.notification-status", in: app)
+        _ = reveal("coach.enabled", in: app, towardTop: true)
+        control.tap()
+        let off = NSPredicate(format: "value == %@", "0")
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: off, object: control)], timeout: 10), .completed)
+
+        app.terminate()
+        app.launch()
+        tap("today.setup", in: app)
+        reveal("coach.settings.open", in: app).tap()
+        XCTAssertTrue(control.waitForExistence(timeout: 15))
+        XCTAssertEqual(control.value as? String, "0")
+        app.terminate()
+        app.launch()
+        tap(AccessibilityID.Dock.start, in: app)
+        tap(AccessibilityID.Player.prepare, in: app)
+        _ = ready(AccessibilityID.Player.exercise("ex-floor-press"), in: app)
+    }
+
+    @MainActor
+    func testLiveActivityRestAndEndOnSimulator() async throws {
+        let app = launch()
+        tap(AccessibilityID.Dock.start, in: app)
+        tap(AccessibilityID.Player.prepare, in: app)
+        tap(AccessibilityID.Player.complete, in: app)
+        tap(AccessibilityID.Player.enterRest, in: app)
+        expectLabel(AccessibilityID.Rest.countdown, containing: "90", in: app)
+
+        let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+        settings.activate()
+        XCTAssertEqual(settings.state, .runningForeground)
+        try await Task.sleep(for: .seconds(2))
+        let image = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        image.name = "26-live-activity-system"
+        image.lifetime = .keepAlways
+        add(image)
+        app.activate()
+        endWorkout(in: app)
+        tap(AccessibilityID.Record.archive, in: app)
+        _ = ready(AccessibilityID.Record.historyTitle, in: app)
+    }
+
+    @MainActor
     func testWorkoutBackgroundKeepsActionRunningAndHonorsExplicitPause() async throws {
         let app = launch(freezeClock: false)
         tap(AccessibilityID.Dock.start, in: app)

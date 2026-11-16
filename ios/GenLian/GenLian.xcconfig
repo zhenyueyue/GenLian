@@ -8,6 +8,7 @@ SUPPORTED_PLATFORMS = iphoneos iphonesimulator
 TARGETED_DEVICE_FAMILY = 1
 SUPPORTS_MACCATALYST = NO
 GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_FILE = GenLian/Info.plist
 INFOPLIST_KEY_CFBundleDisplayName = 跟练
 INFOPLIST_KEY_UILaunchScreen_Generation = YES
 INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES

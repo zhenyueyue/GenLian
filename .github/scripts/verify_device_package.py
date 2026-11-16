@@ -15,6 +15,26 @@ MACHO_MAGIC = {
 }
 
 
+def verify_coach_bundle(app):
+    info = plistlib.loads((app / "Info.plist").read_bytes())
+    if info.get("UIBackgroundModes") != ["audio"] or info.get("NSSupportsLiveActivities") is not True:
+        raise SystemExit("GenLian is missing its audio or Live Activity Info.plist configuration.")
+    widget = app / "PlugIns" / "GenLianWidget.appex"
+    if not widget.is_dir():
+        raise SystemExit("GenLianWidget.appex was not embedded.")
+    extension = plistlib.loads((widget / "Info.plist").read_bytes())
+    if (
+        extension.get("CFBundleIdentifier") != "com.genlian.app.widget"
+        or extension.get("NSExtension", {}).get("NSExtensionPointIdentifier") != "com.apple.widgetkit-extension"
+        or extension.get("CFBundleSupportedPlatforms") != info.get("CFBundleSupportedPlatforms")
+    ):
+        raise SystemExit("Embedded widget identity or platform does not match GenLian.")
+    executable = widget / extension.get("CFBundleExecutable", "")
+    if not executable.is_file() or not is_macho(executable):
+        raise SystemExit("Embedded widget executable is missing or invalid.")
+    print("Verified audio background mode, Live Activities, and the embedded WidgetKit extension.")
+
+
 def verify_info(app, results):
     with (app / "Info.plist").open("rb") as file:
         info = plistlib.load(file)
@@ -99,5 +119,6 @@ if __name__ == "__main__":
         raise SystemExit("IPA must contain exactly Payload/GenLian.app at its bundle root.")
     executable = verify_info(app, results)
     verify_binaries(app, executable, results)
+    verify_coach_bundle(app)
     verify_resources(app, results)
     print("Verified bundle com.genlian.app, minimum iOS 26.0, and no app resource signature or provisioning profile.")
