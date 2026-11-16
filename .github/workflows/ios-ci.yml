@@ -112,6 +112,15 @@ jobs:
             2>&1 | tee "$CI_RESULTS/ui-attachments.log"
           python3 .github/scripts/ios_ci.py ui-tests "$CI_RESULTS" "$UI_OUTCOME"
 
+      - name: Upload SwiftUI page screenshots
+        if: ${{ !cancelled() && (steps.ui.outcome == 'success' || steps.ui.outcome == 'failure') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: genlian-ui-screenshots-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/genlian-ci/ui-screenshots/*.png
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Install and launch GenLian in the simulator
         if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' }}
         timeout-minutes: 8

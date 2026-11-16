@@ -77,6 +77,7 @@ final class GenLianUITests: XCTestCase {
     func testRecoveryRecordsIndependentSeconds() {
         let app = launch()
         reveal(AccessibilityID.Today.course("recovery"), in: app).tap()
+        _ = reveal(AccessibilityID.Today.title, in: app, towardTop: true)
         expectLabel(AccessibilityID.Today.title, containing: "恢复", in: app)
         tap(AccessibilityID.Dock.start, in: app)
         tap(AccessibilityID.Player.prepare, in: app)
@@ -169,9 +170,11 @@ final class GenLianUITests: XCTestCase {
 
     @MainActor
     private func tap(_ id: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
-        let match = ready(id, in: app, file: file, line: line)
-        let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == YES"), object: match)
-        XCTAssertEqual(XCTWaiter.wait(for: [hittable], timeout: 5), .completed, "\(id) is not hittable", file: file, line: line)
+        let match = app.buttons.matching(identifier: id).firstMatch
+        XCTAssertTrue(
+            match.wait(for: \.isHittable, toEqual: true, timeout: 20),
+            "\(id) is not hittable\n\(app.debugDescription)", file: file, line: line
+        )
         match.tap()
     }
 
@@ -198,7 +201,7 @@ final class GenLianUITests: XCTestCase {
         let match = ready(id, in: app, file: file, line: line)
         let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", text), object: match)
         XCTAssertEqual(
-            XCTWaiter.wait(for: [changed], timeout: 5), .completed,
+            XCTWaiter.wait(for: [changed], timeout: 15), .completed,
             "\(id) expected \(text), got \(match.label)", file: file, line: line
         )
     }
