@@ -122,9 +122,33 @@ jobs:
             xcrun simctl io "$DEVICE" screenshot "$CI_RESULTS/GenLian-smoke.png"
           } 2>&1 | tee "$CI_RESULTS/simulator-smoke.log"
 
+      - name: Build and register the GenLian UI test runner
+        id: test_runner
+        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outcome == 'success' }}
+        timeout-minutes: 6
+        env:
+          DEVICE: ${{ steps.simulator.outputs.device }}
+        run: |
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
+            -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" \
+            -derivedDataPath "$DERIVED_DATA" -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO \
+            build-for-testing 2>&1 | tee "$CI_RESULTS/GenLian-build-for-testing.log"
+          {
+            runner_app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/GenLianUITests-Runner.app"
+            runner_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$runner_app/Info.plist")
+            xcrun simctl bootstatus "$DEVICE" -b
+            xcrun simctl install "$DEVICE" "$runner_app"
+            for attempt in 1 2 3; do
+              if xcrun simctl get_app_container "$DEVICE" "$runner_id" app; then exit 0; fi
+              if [ "$attempt" -lt 3 ]; then sleep 5; fi
+            done
+            xcrun simctl listapps "$DEVICE"
+            exit 1
+          } 2>&1 | tee "$CI_RESULTS/test-runner-install.log"
+
       - name: Run GenLian XCUITests on iOS Simulator
         id: ui
-        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.test_runner.outcome == 'success' }}
         timeout-minutes: 30
         env:
           DEVICE: ${{ steps.simulator.outputs.device }}
@@ -132,7 +156,7 @@ jobs:
           xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
             -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" \
             -derivedDataPath "$DERIVED_DATA" -resultBundlePath "$CI_RESULTS/GenLian-test.xcresult" \
-            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test 2>&1 | tee "$CI_RESULTS/GenLian-test.log"
+            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test-without-building 2>&1 | tee "$CI_RESULTS/GenLian-test.log"
 
       - name: Export UI test results and screenshots
         if: ${{ !cancelled() && (steps.ui.outcome == 'success' || steps.ui.outcome == 'failure') }}
