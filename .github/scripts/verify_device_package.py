@@ -35,6 +35,26 @@ def verify_coach_bundle(app):
     print("Verified audio background mode, Live Activities, and the embedded WidgetKit extension.")
 
 
+def verify_primary_app_icon(app, entries):
+    info = plistlib.loads((app / "Info.plist").read_bytes())
+    primary = info.get("CFBundleIcons", {}).get("CFBundlePrimaryIcon", {})
+    if primary.get("CFBundleIconName") != "AppIcon":
+        raise SystemExit("The app does not declare AppIcon as its primary icon.")
+
+    basenames = {Path(name).stem for name in primary.get("CFBundleIconFiles", [])}
+    icons = sorted(
+        path.name for path in app.glob("*.png")
+        if path.stem.split("@", 1)[0] in basenames and path.stat().st_size > 0
+    )
+    renditions = sorted({
+        entry.get("RenditionName") or entry["Name"]
+        for entry in entries if entry.get("Name") in basenames | {"AppIcon"}
+    })
+    if not icons and not renditions:
+        raise SystemExit("The primary AppIcon has no generated icon files or asset renditions.")
+    print("Verified primary AppIcon: " + ", ".join(sorted(set(icons + renditions))))
+
+
 def verify_info(app, results):
     with (app / "Info.plist").open("rb") as file:
         info = plistlib.load(file)
@@ -101,7 +121,9 @@ def verify_resources(app, results):
         assetutil = shutil.which("assetutil") or record_command(["xcrun", "--find", "assetutil"], log).strip()
         with (results / "asset-catalog.json").open("w", encoding="utf-8") as file:
             subprocess.run([assetutil, "--info", catalog], stdout=file, stderr=log, check=True)
-        names = {item.get("Name") for item in json.loads((results / "asset-catalog.json").read_bytes())}
+        entries = json.loads((results / "asset-catalog.json").read_bytes())
+        verify_primary_app_icon(app, entries)
+        names = {item.get("Name") for item in entries}
         expected = {path.stem for path in Path("ios/GenLian/Assets.xcassets").rglob("*.imageset")}
         if len(expected) != 13:
             raise SystemExit(f"Expected 13 source image sets, found {len(expected)}.")

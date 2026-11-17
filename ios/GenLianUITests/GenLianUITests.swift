@@ -2,6 +2,27 @@ import XCTest
 
 final class GenLianUITests: XCTestCase {
     @MainActor
+    func testAppIconAppearsOnSimulatorHomeScreen() {
+        let app = launch()
+        XCUIDevice.shared.press(.home)
+
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let icon = springboard.icons.matching(NSPredicate(
+            format: "label IN %@ OR identifier == %@", ["跟练", "GenLian"], "com.genlian.app"
+        )).firstMatch
+        for page in 0..<4 {
+            if icon.waitForExistence(timeout: 2), icon.isHittable {
+                captureSystem("28-app-icon-home")
+                icon.tap()
+                XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15))
+                return
+            }
+            if page < 3 { springboard.swipeLeft() }
+        }
+        XCTFail("GenLian's app icon was not visible on the simulator Home Screen")
+    }
+
+    @MainActor
     func testCoachSettingsPersistAndTrainingRemainsAvailableWithoutNotificationPermission() {
         let app = launch()
         tap("today.setup", in: app)

@@ -7,7 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 from xml.etree import ElementTree
-from verify_device_package import verify_coach_bundle
+from verify_device_package import verify_coach_bundle, verify_primary_app_icon
 
 
 def report_tests(results, outcome):
@@ -62,8 +62,8 @@ def report_ui_tests(results, outcome):
             if match and source.suffix.lower() == ".png":
                 shutil.copyfile(source, screenshots / f"{match[1]}.png")
     if outcome == "success":
-        if passed < 9 or failed or skipped:
-            raise SystemExit("The nine required GenLian UI tests did not all pass.")
+        if passed < 10 or failed or skipped:
+            raise SystemExit("The ten required GenLian UI tests did not all pass.")
         required = {
             "01-today", "02-workout-detail", "03-training-setup", "04-strength-player",
             "05-between-set-rest", "06-workout-summary", "07-training-history", "08-history-detail",
@@ -75,6 +75,7 @@ def report_ui_tests(results, outcome):
             "25-coach-settings", "26-live-activity-system", "26a-live-activity-expanded",
             "27-expired-auto-compact", "27-expired-auto-expanded",
             "27-expired-manual-compact", "27-expired-manual-expanded",
+            "28-app-icon-home",
         }
         missing = required - {path.stem for path in screenshots.glob("*.png")}
         if missing:
@@ -164,6 +165,7 @@ def verify_resources(results, app):
     with (results / "asset-catalog.json").open("w", encoding="utf-8") as file:
         subprocess.run([assetutil, "--info", str(catalog)], stdout=file, check=True)
     entries = json.loads((results / "asset-catalog.json").read_text(encoding="utf-8"))
+    verify_primary_app_icon(app, entries)
     names = {entry.get("Name") for entry in entries}
     assets = Path("ios/GenLian/Assets.xcassets")
     expected = {path.stem for path in assets.rglob("*.imageset")}
