@@ -32,7 +32,16 @@ def verify_coach_bundle(app):
     executable = widget / extension.get("CFBundleExecutable", "")
     if not executable.is_file() or not is_macho(executable):
         raise SystemExit("Embedded widget executable is missing or invalid.")
+    catalog = widget / "Assets.car"
+    if not catalog.is_file() or not catalog.stat().st_size:
+        raise SystemExit("Live Activity coach portraits were not compiled into the Widget Extension.")
+    assetutil = shutil.which("assetutil") or subprocess.check_output(["xcrun", "--find", "assetutil"], text=True).strip()
+    entries = json.loads(subprocess.check_output([assetutil, "--info", catalog]))
+    portraits = {"CoachRest", "CoachReady", "CoachFloorPress", "CoachComplete"}
+    if missing := portraits - {entry.get("Name") for entry in entries}:
+        raise SystemExit("Missing compiled Live Activity portraits: " + ", ".join(sorted(missing)))
     print("Verified audio background mode, Live Activities, and the embedded WidgetKit extension.")
+    print("Verified all four Live Activity coach portraits in the widget asset catalog.")
 
 
 def verify_primary_app_icon(app, entries):

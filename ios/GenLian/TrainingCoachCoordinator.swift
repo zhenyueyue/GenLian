@@ -23,8 +23,7 @@ final class TrainingCoachCoordinator {
             reminder, preparing: CoachPolicy.upcomingRestSpeech(session), preferences: preferences,
             foreground: foreground
         )
-        let liveSession = CoachPolicy.liveSession(session)
-        live.update(liveSession, deadline: reminder?.deadline, foreground: foreground)
+        live.update(session, restDeadline: reminder?.deadline, now: now, foreground: foreground)
 
         let prompts = foreground && announce ? session.map {
             CoachPolicy.prompts(from: old, to: $0, preferences: preferences)

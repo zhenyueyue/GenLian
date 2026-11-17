@@ -8,6 +8,7 @@ struct TrainingActivityAttributes: ActivityAttributes {
         case rest = "休息"
         case restReady = "休息结束"
         case paused = "暂停"
+        case completed = "完成"
     }
 
     struct ContentState: Codable, Hashable, Sendable {
@@ -19,6 +20,11 @@ struct TrainingActivityAttributes: ActivityAttributes {
         let restDeadline: Date?
         var nextRound: Int? = nil
         var autoAdvance: Bool? = nil
+        var movementID: String? = nil
+        var timerStart: Date? = nil
+        var preparationDeadline: Date? = nil
+        var preparationSeconds: Int? = nil
+        var completedRounds: [Int]? = nil
     }
 
     let sessionID: UUID

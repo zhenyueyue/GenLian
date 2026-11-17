@@ -55,24 +55,51 @@ final class GenLianUITests: XCTestCase {
     func testLiveActivityRestAndEndOnSimulator() async throws {
         let app = launch()
         tap(AccessibilityID.Dock.start, in: app)
+        _ = ready(AccessibilityID.Player.prepare, in: app)
+        try await captureActivitySurfaces("29-training-ready", in: app)
         tap(AccessibilityID.Player.prepare, in: app)
+        _ = ready(AccessibilityID.Player.exercise("ex-floor-press"), in: app)
+        try await captureActivitySurfaces("29-training-action", in: app)
+        tap(AccessibilityID.Player.pause, in: app)
+        _ = ready(AccessibilityID.Player.pauseStatus, in: app)
+        try await captureActivitySurfaces("29-training-paused", in: app)
+        tap(AccessibilityID.Player.resume, in: app)
         tap(AccessibilityID.Player.complete, in: app)
         tap(AccessibilityID.Player.enterRest, in: app)
         expectLabel(AccessibilityID.Rest.countdown, containing: "90", in: app)
+        try await captureActivitySurfaces("29-training-rest", in: app, island: ("26-live-activity-system", "26a-live-activity-expanded"))
 
-        let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
-        settings.activate()
-        XCTAssertEqual(settings.state, .runningForeground)
-        try await Task.sleep(for: .seconds(2))
-        captureSystem("26-live-activity-system")
-        // The Dynamic Island is a system overlay outside the app's accessibility hierarchy.
-        settings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
-        try await Task.sleep(for: .seconds(1))
-        captureSystem("26a-live-activity-expanded")
-        app.activate()
         endWorkout(in: app)
         tap(AccessibilityID.Record.archive, in: app)
         _ = ready(AccessibilityID.Record.historyTitle, in: app)
+    }
+
+    @MainActor
+    func testLiveActivityCompletionAfterAllRecoverySets() async throws {
+        let app = launch()
+        reveal(AccessibilityID.Today.course("recovery"), in: app).tap()
+        _ = reveal(AccessibilityID.Today.title, in: app, towardTop: true)
+        tap(AccessibilityID.Dock.start, in: app)
+        tap(AccessibilityID.Player.prepare, in: app)
+        for round in 1...2 {
+            _ = ready(AccessibilityID.Player.exercise("ex-thoracic"), in: app)
+            for _ in 0..<2 {
+                tap(AccessibilityID.Player.increase, in: app)
+                tap(AccessibilityID.Player.complete, in: app)
+            }
+            tap(AccessibilityID.Player.enterRest, in: app)
+            tap(AccessibilityID.Rest.finish, in: app)
+            tap(AccessibilityID.Player.next, in: app)
+            _ = ready(AccessibilityID.Player.exercise("ex-dead-bug-rec"), in: app)
+            tap(AccessibilityID.Player.complete, in: app)
+            if round == 1 {
+                tap(AccessibilityID.Player.enterRest, in: app)
+                tap(AccessibilityID.Rest.finish, in: app)
+                tap(AccessibilityID.Player.next, in: app)
+            }
+        }
+        expectLabel(AccessibilityID.Record.groups, containing: "6/6", in: app)
+        try await captureActivitySurfaces("29-training-complete", in: app, expand: false)
     }
 
     @MainActor
@@ -555,5 +582,30 @@ final class GenLianUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    @MainActor
+    private func captureActivitySurfaces(
+        _ label: String, in app: XCUIApplication, island: (String, String)? = nil, expand: Bool = true
+    ) async throws {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        let backgrounded = app.wait(for: .runningBackground, timeout: 3)
+            || app.wait(for: .runningBackgroundSuspended, timeout: 7)
+        XCTAssertTrue(backgrounded)
+        try await Task.sleep(for: .seconds(1))
+        captureSystem(island?.0 ?? "\(label)-compact")
+        if expand {
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
+            try await Task.sleep(for: .seconds(1))
+            captureSystem(island?.1 ?? "\(label)-expanded")
+            XCUIDevice.shared.press(.home)
+        }
+        let edge = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.004))
+        let destination = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.65))
+        edge.press(forDuration: 0.05, thenDragTo: destination)
+        try await Task.sleep(for: .seconds(1))
+        captureSystem("\(label)-cover-sheet")
+        app.activate()
     }
 }

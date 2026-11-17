@@ -4,126 +4,331 @@ import WidgetKit
 
 @main
 struct TrainingLiveActivityWidget: Widget {
-    private let accent = Color(red: 0.82, green: 0.33, blue: 0.19)
-
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TrainingActivityAttributes.self) { context in
-            let presentation = presentation(context)
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Label(context.attributes.course, systemImage: "figure.strengthtraining.traditional")
-                        .font(.headline)
-                    Spacer(minLength: 4)
-                    Text("\(round(context, presentation))/\(context.state.rounds) 轮").font(.caption.monospacedDigit())
-                }
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(status(context, presentation)).font(.caption.weight(.semibold)).foregroundStyle(accent)
-                        movement(context, presentation)
-                    }
-                    Spacer(minLength: 4)
-                    countdown(presentation).font(.title3.monospacedDigit().weight(.semibold))
-                }
-            }
-            .padding(16)
-            .activityBackgroundTint(Color(red: 0.97, green: 0.95, blue: 0.91))
-            .activitySystemActionForegroundColor(.black)
-            .foregroundStyle(.black)
+            TrainingLockScreen(course: context.attributes.course, display: TrainingDisplay(context))
+                .activityBackgroundTint(HUD.background)
+                .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
-            let presentation = presentation(context)
+            let display = TrainingDisplay(context)
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Label(status(context, presentation), systemImage: "figure.strengthtraining.traditional")
-                        .foregroundStyle(.orange)
+                    Label(display.shortStatus, systemImage: display.symbol)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(HUD.orange)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    countdown(presentation).monospacedDigit()
-                        .foregroundStyle(.white)
+                    Text(display.roundLabel)
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(HUD.secondary)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(context.attributes.course).font(.caption).foregroundStyle(.secondary)
-                        movement(context, presentation, includeRound: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    TrainingIslandHUD(display: display)
                 }
             } compactLeading: {
-                Image(systemName: symbol(context, presentation)).foregroundStyle(.orange)
-                    .accessibilityLabel(status(context, presentation))
+                Image(systemName: display.symbol)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(HUD.orange)
+                    .accessibilityLabel(display.status)
             } compactTrailing: {
-                compactLabel(context, presentation)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                    .foregroundStyle(.white)
+                if let interval = display.timer {
+                    TimerDigits(interval: interval)
+                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                        .frame(width: 43, alignment: .trailing)
+                } else if let time = display.heldTime {
+                    Text(time)
+                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(HUD.primary)
+                        .accessibilityLabel("准备倒计时已停在 \(time)")
+                } else {
+                    Text(display.shortStatus)
+                        .font(.caption2.weight(.semibold))
+                        .lineLimit(1)
+                        .foregroundStyle(HUD.primary)
+                        .accessibilityLabel(display.status)
+                }
             } minimal: {
-                Image(systemName: symbol(context, presentation))
-                    .foregroundStyle(.orange)
+                Image(systemName: display.symbol)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(HUD.orange)
+                    .accessibilityLabel(display.status)
+            }
+            .keylineTint(HUD.orange)
+        }
+    }
+}
+
+private struct TrainingDisplay {
+    let stage: TrainingActivityAttributes.Stage
+    let title: String
+    let next: String?
+    let round: Int
+    let rounds: Int
+    let completed: [Int]
+    let timer: ClosedRange<Date>?
+    let heldTime: String?
+    let portrait: String?
+
+    init(_ context: ActivityViewContext<TrainingActivityAttributes>, now: Date = .now) {
+        let state = context.state
+        var stage = state.stage
+        var title = state.exercise
+        var next = state.nextExercise
+        var round = state.round
+        var deadline: Date?
+        if state.stage == .rest || state.stage == .restReady {
+            switch RestActivityPresentation.resolve(
+                deadline: state.restDeadline, isStale: context.isStale, now: now,
+                nextExercise: state.nextExercise, nextRound: state.nextRound ?? state.round,
+                autoAdvance: state.autoAdvance ?? false
+            ) {
+            case .countdown(let until):
+                deadline = until
+            case .next(let exercise, let nextRound, let waitsForConfirmation):
+                stage = waitsForConfirmation ? .restReady : .ready
+                title = exercise ?? state.exercise
+                next = nil
+                round = nextRound
+            }
+        } else if state.stage == .ready, let until = state.preparationDeadline, now < until {
+            deadline = until
+        }
+        self.stage = stage
+        self.title = stage == .completed ? "训练完成" : title
+        self.next = stage == .completed ? nil : next
+        self.round = round
+        rounds = state.rounds
+        completed = state.completedRounds ?? []
+        if let deadline {
+            let start = state.timerStart ?? now
+            timer = min(start, now)...deadline
+        } else {
+            timer = nil
+        }
+        heldTime = state.preparationSeconds.map { String(format: "%d:%02d", $0 / 60, $0 % 60) }
+        portrait = switch stage {
+        case .rest, .restReady: "CoachRest"
+        case .ready: "CoachReady"
+        case .exercise: state.movementID == "ex-floor-press" ? "CoachFloorPress" : nil
+        case .paused: nil
+        case .completed: "CoachComplete"
+        }
+    }
+
+    var shortStatus: String {
+        stage == .restReady ? "待确认" : stage.rawValue
+    }
+
+    var status: String {
+        stage == .restReady ? "休息结束 · 等待确认" : stage.rawValue
+    }
+
+    var symbol: String {
+        switch stage {
+        case .rest: "hourglass"
+        case .restReady: "hand.tap.fill"
+        case .ready: "bolt.fill"
+        case .exercise: "dumbbell.fill"
+        case .paused: "pause.fill"
+        case .completed: "checkmark"
+        }
+    }
+
+    var roundLabel: String { "第 \(round)/\(rounds) 轮" }
+
+    var detail: String? {
+        switch stage {
+        case .restReady: "打开跟练确认下一动作"
+        case .ready where timer == nil: "打开跟练继续"
+        case .paused: "打开跟练继续"
+        case .completed: "本次训练已完成"
+        default: next.map { "下一动作 · \($0)" }
+        }
+    }
+}
+
+private enum HUD {
+    static let background = Color(red: 0.067, green: 0.060, blue: 0.057)
+    static let orange = Color(red: 1, green: 0.60, blue: 0.34)
+    static let primary = Color.white
+    static let secondary = Color(red: 0.79, green: 0.76, blue: 0.73)
+    static let track = Color.white.opacity(0.19)
+}
+
+private struct TrainingIslandHUD: View {
+    let display: TrainingDisplay
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                TimerFace(display: display, size: 53)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(display.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(HUD.primary)
+                        .lineLimit(2)
+                    if let detail = display.detail {
+                        Text(detail)
+                            .font(.caption2)
+                            .foregroundStyle(HUD.secondary)
+                            .lineLimit(2)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                CoachPortrait(name: display.portrait, width: 71, height: 61)
+            }
+            RoundTrack(display: display)
+        }
+        .padding(.horizontal, 7)
+        .padding(.bottom, 5)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.20), value: display.stage)
+    }
+}
+
+private struct TrainingLockScreen: View {
+    let course: String
+    let display: TrainingDisplay
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Label("GenLian", systemImage: "dumbbell.fill")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(HUD.orange)
+                Text(course)
+                    .font(.caption)
+                    .lineLimit(1)
+                    .foregroundStyle(HUD.secondary)
+                    .accessibilityLabel(course)
+                Spacer(minLength: 2)
+                Text(display.status)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(HUD.orange)
+            }
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(display.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(HUD.primary)
+                        .lineLimit(2)
+                    Text(display.roundLabel)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(HUD.orange)
+                    if let detail = display.detail {
+                        Text(detail)
+                            .font(.caption2)
+                            .foregroundStyle(HUD.secondary)
+                            .lineLimit(2)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+                ZStack(alignment: .bottomLeading) {
+                    CoachPortrait(name: display.portrait, width: typeSize.isAccessibilitySize ? 78 : 134, height: 88)
+                        .padding(.leading, typeSize.isAccessibilitySize ? 12 : 26)
+                    TimerFace(display: display, size: 59)
+                        .background(HUD.background, in: Circle())
+                }
+            }
+            RoundTrack(display: display)
+        }
+        .padding(13)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.20), value: display.stage)
+    }
+}
+
+private struct CoachPortrait: View {
+    let name: String?
+    let width: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        if let name {
+            Image(name)
+                .resizable()
+                .scaledToFit()
+                .frame(width: width, height: height)
+                .background {
+                    RadialGradient(colors: [HUD.orange.opacity(0.25), .clear], center: .center, startRadius: 0, endRadius: width * 0.52)
+                }
+                .id(name)
+                .transition(.opacity)
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+private struct TimerDigits: View {
+    let interval: ClosedRange<Date>
+
+    var body: some View {
+        Text(timerInterval: interval, countsDown: true, showsHours: false)
+            .monospacedDigit()
+            .contentTransition(.numericText(countsDown: true))
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .foregroundStyle(HUD.primary)
+    }
+}
+
+private struct TimerFace: View {
+    let display: TrainingDisplay
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle().strokeBorder(HUD.track, lineWidth: 2)
+            if let interval = display.timer {
+                ProgressView(timerInterval: interval, countsDown: true) {
+                    EmptyView()
+                } currentValueLabel: {
+                    EmptyView()
+                }
+                .progressViewStyle(.circular)
+                .tint(HUD.orange)
+                .accessibilityHidden(true)
+                TimerDigits(interval: interval)
+                    .font(.system(size: size * 0.25, weight: .semibold, design: .monospaced))
+                    .padding(.horizontal, 5)
+            } else if let time = display.heldTime {
+                Text(time)
+                    .font(.system(size: size * 0.25, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(HUD.secondary)
+                    .accessibilityLabel("准备倒计时已停在 \(time)")
+            } else {
+                Image(systemName: display.symbol)
+                    .font(.system(size: size * 0.32, weight: .semibold))
+                    .foregroundStyle(HUD.orange)
+                    .accessibilityHidden(true)
             }
         }
+        .frame(width: size, height: size)
     }
+}
 
-    private func presentation(_ context: ActivityViewContext<TrainingActivityAttributes>) -> RestActivityPresentation? {
-        let state = context.state
-        guard state.stage == .rest || state.stage == .restReady else { return nil }
-        return .resolve(
-            deadline: state.restDeadline, isStale: context.isStale, now: .now,
-            nextExercise: state.nextExercise, nextRound: state.nextRound ?? state.round,
-            autoAdvance: state.autoAdvance ?? false
-        )
-    }
+private struct RoundTrack: View {
+    let display: TrainingDisplay
 
-    private func status(_ context: ActivityViewContext<TrainingActivityAttributes>, _ presentation: RestActivityPresentation?) -> String {
-        if case .next(_, _, let waiting) = presentation {
-            return waiting ? "休息结束 · 等待确认" : "准备下一动作"
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<display.rounds, id: \.self) { index in
+                let round = index + 1
+                let filled = display.completed.contains(round)
+                let current = round == display.round && display.stage != .completed
+                Capsule()
+                    .fill(filled ? HUD.orange : current ? HUD.orange.opacity(0.48) : HUD.track)
+                    .overlay {
+                        if current && !filled {
+                            Capsule().strokeBorder(HUD.orange, lineWidth: 1)
+                        }
+                    }
+            }
         }
-        return context.state.stage.rawValue
-    }
-
-    private func round(_ context: ActivityViewContext<TrainingActivityAttributes>, _ presentation: RestActivityPresentation?) -> Int {
-        if case .next(_, let nextRound, _) = presentation { return nextRound }
-        return context.state.round
-    }
-
-    private func symbol(_ context: ActivityViewContext<TrainingActivityAttributes>, _ presentation: RestActivityPresentation?) -> String {
-        if context.state.stage == .paused { return "pause.fill" }
-        if case .next(_, _, let waiting) = presentation { return waiting ? "hand.tap" : "arrow.right" }
-        return "figure.strengthtraining.traditional"
-    }
-
-    @ViewBuilder
-    private func movement(
-        _ context: ActivityViewContext<TrainingActivityAttributes>, _ presentation: RestActivityPresentation?, includeRound: Bool = false
-    ) -> some View {
-        let state = context.state
-        let rounds = "第 \(round(context, presentation))/\(state.rounds) 轮"
-        if case .next(let exercise, _, _) = presentation {
-            if let exercise { Text("下一动作 · \(exercise)").font(.subheadline.weight(.semibold)) }
-            if includeRound { Text(rounds).font(.caption).foregroundStyle(.secondary) }
-        } else {
-            Text(includeRound ? "\(state.exercise) · \(rounds)" : state.exercise).font(.subheadline.weight(.semibold))
-            if let next = state.nextExercise { Text("下一动作 · \(next)").font(.caption).foregroundStyle(.secondary) }
-        }
-    }
-
-    @ViewBuilder
-    private func countdown(_ presentation: RestActivityPresentation?) -> some View {
-        let now = Date.now
-        if case .countdown(let deadline) = presentation, now < deadline {
-            Text(timerInterval: now...deadline, countsDown: true)
-                .multilineTextAlignment(.trailing)
-        }
-    }
-
-    @ViewBuilder
-    private func compactLabel(_ context: ActivityViewContext<TrainingActivityAttributes>, _ presentation: RestActivityPresentation?) -> some View {
-        if case .countdown = presentation {
-            countdown(presentation).frame(width: 44, alignment: .trailing)
-        } else if case .next(let exercise, let round, _) = presentation, let exercise {
-            Text(exercise)
-                .accessibilityLabel("\(status(context, presentation))，\(exercise)，第 \(round) 轮")
-        } else {
-            Text(status(context, presentation))
-        }
+        .frame(height: 4)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("已完成 \(display.completed.count)/\(display.rounds) 轮，\(display.roundLabel)")
     }
 }
