@@ -65,6 +65,7 @@ jobs:
         if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: |
           xcodebuild -project "$XCODE_PROJECT" -list 2>&1 | tee "$CI_RESULTS/schemes.log"
+          xcrun --sdk iphonesimulator --show-sdk-version | tee "$CI_RESULTS/simulator-sdk-version.txt"
           for attempt in 1 2 3; do
             xcrun simctl list devices available --json \
               > "$CI_RESULTS/simulators.json" 2> "$CI_RESULTS/simulators.stderr.log"
@@ -94,6 +95,32 @@ jobs:
           python3 .github/scripts/ios_ci.py resources "$CI_RESULTS" \
             "$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$XCODE_SCHEME.app" \
             2>&1 | tee "$CI_RESULTS/resources.log"
+
+      - name: Install and launch GenLian in the simulator
+        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' }}
+        timeout-minutes: 8
+        env:
+          DEVICE: ${{ steps.simulator.outputs.device }}
+        run: |
+          {
+            app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$XCODE_SCHEME.app"
+            bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
+            xcrun simctl bootstatus "$DEVICE" -b
+            xcrun simctl install "$DEVICE" "$app"
+            trap 'xcrun simctl terminate "$DEVICE" "$bundle_id" >/dev/null 2>&1 || true' EXIT
+            xcrun simctl launch --terminate-running-process "$DEVICE" "$bundle_id" | tee "$CI_RESULTS/simulator-launch.log"
+            pid=$(awk '/: [0-9]+$/ { print $NF; exit }' "$CI_RESULTS/simulator-launch.log")
+            test -n "$pid"
+            sleep 5
+            if ! ps -p "$pid" -o pid=,command=; then
+              xcrun simctl spawn "$DEVICE" log show --last 2m --style compact \
+                --predicate "process == \"$XCODE_SCHEME\"" || true
+              echo "GenLian exited after launch."
+              exit 1
+            fi
+            echo "GenLian remained running after the startup wait."
+            xcrun simctl io "$DEVICE" screenshot "$CI_RESULTS/GenLian-smoke.png"
+          } 2>&1 | tee "$CI_RESULTS/simulator-smoke.log"
 
       - name: Run GenLian XCUITests on iOS Simulator
         id: ui
@@ -126,31 +153,6 @@ jobs:
           path: ${{ runner.temp }}/genlian-ci/ui-screenshots/*.png
           if-no-files-found: warn
           retention-days: 7
-
-      - name: Install and launch GenLian in the simulator
-        if: ${{ !cancelled() && steps.app.outcome == 'success' && steps.simulator.outputs.device != '' }}
-        timeout-minutes: 8
-        env:
-          DEVICE: ${{ steps.simulator.outputs.device }}
-        run: |
-          {
-            app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/$XCODE_SCHEME.app"
-            bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")
-            xcrun simctl bootstatus "$DEVICE" -b
-            xcrun simctl install "$DEVICE" "$app"
-            xcrun simctl launch "$DEVICE" "$bundle_id" | tee "$CI_RESULTS/simulator-launch.log"
-            pid=$(awk '/: [0-9]+$/ { print $NF; exit }' "$CI_RESULTS/simulator-launch.log")
-            test -n "$pid"
-            sleep 5
-            if ! ps -p "$pid" -o pid=,command=; then
-              xcrun simctl spawn "$DEVICE" log show --last 2m --style compact \
-                --predicate "process == \"$XCODE_SCHEME\"" || true
-              echo "GenLian exited after launch."
-              exit 1
-            fi
-            echo "GenLian remained running after the startup wait."
-            xcrun simctl io "$DEVICE" screenshot "$CI_RESULTS/GenLian-smoke.png"
-          } 2>&1 | tee "$CI_RESULTS/simulator-smoke.log"
 
       - name: Upload iOS CI diagnostics
         if: ${{ always() }}

@@ -81,8 +81,8 @@ def report_ui_tests(results, outcome):
             raise SystemExit("Required UI screenshots missing: " + ", ".join(sorted(missing)))
 
 
-def select_iphone(devices, destinations):
-    supported, *_ = destinations.split("Ineligible destinations", 1)
+def select_iphone(devices, destinations, sdk_version):
+    supported = re.split(r"Ineligible destinations|Destinations incompatible", destinations, maxsplit=1)[0]
     valid_ids = {
         match.upper()
         for match in re.findall(r"platform:\s*iOS Simulator\b[^\n]*?\bid:\s*([0-9a-f-]{36})\b", supported, re.I)
@@ -92,6 +92,7 @@ def select_iphone(devices, destinations):
         version = re.fullmatch(r"com\.apple\.CoreSimulator\.SimRuntime\.iOS-(\d+(?:-\d+)*)", runtime)
         if not version:
             continue
+        runtime_version = tuple(map(int, version[1].split("-")))
         for entry in entries:
             model = entry.get("deviceTypeIdentifier", "").removeprefix("com.apple.CoreSimulator.SimDeviceType.")
             if (
@@ -101,8 +102,9 @@ def select_iphone(devices, destinations):
             ):
                 preference = 2 if model == "iPhone-15-Pro-Max" else int(model.endswith("-Pro-Max"))
                 ranks.append((
+                    runtime_version <= sdk_version,
                     preference,
-                    tuple(map(int, version[1].split("-"))),
+                    runtime_version,
                     entry.get("state") == "Booted",
                     entry["name"],
                     entry["udid"],
@@ -113,7 +115,9 @@ def select_iphone(devices, destinations):
 def discover_simulator(results, scheme_path):
     devices = json.loads((results / "simulators.json").read_text(encoding="utf-8"))["devices"]
     destinations = (results / "destinations.log").read_text(encoding="utf-8")
-    selected = select_iphone(devices, destinations)
+    sdk = (results / "simulator-sdk-version.txt").read_text(encoding="utf-8").strip()
+    sdk_version = tuple(map(int, sdk.split(".")))
+    selected = select_iphone(devices, destinations, sdk_version)
     scheme = ElementTree.parse(scheme_path).getroot()
     has_tests = (
         any(item.get("skipped") != "YES" for item in scheme.findall("./TestAction/Testables/TestableReference"))
@@ -123,7 +127,7 @@ def discover_simulator(results, scheme_path):
         raise SystemExit("No available iPhone destination matched the GenLian scheme.")
     if not has_tests:
         raise SystemExit("No enabled test target or test plan in the shared GenLian scheme.")
-    _, version, _, name, device = selected
+    _, _, version, _, name, device = selected
     print(f"Selected {name}, iOS {'.'.join(map(str, version))}, {device}.")
     with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as file:
         file.write(f"device={device}\n")
