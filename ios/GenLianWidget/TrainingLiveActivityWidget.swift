@@ -16,25 +16,18 @@ struct TrainingLiveActivityWidget: Widget {
                     TrainingIslandHUD(display: display)
                 }
             } compactLeading: {
-                Label(display.shortStatus, systemImage: display.symbol)
-                    .font(.system(size: 12, weight: .semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
-                    .foregroundStyle(display.appearance.accent)
-                    .frame(
-                        width: IslandLayout.compactWidth, height: IslandLayout.compactHeight, alignment: .leading
-                    )
-                    .accessibilityLabel(display.status)
+                CompactTrainingSide(display: display, leading: true)
             } compactTrailing: {
-                CompactTrainingTimer(display: display)
+                CompactTrainingSide(display: display, leading: false)
             } minimal: {
                 Image(systemName: display.symbol)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(display.appearance.accent)
+                    .frame(width: 20, height: 20)
                     .accessibilityLabel(display.status)
             }
-            .contentMargins(.horizontal, 26, for: .expanded)
-            .contentMargins(.top, 13, for: .expanded)
+            .contentMargins(.horizontal, 28, for: .expanded)
+            .contentMargins(.top, 8, for: .expanded)
             .contentMargins(.bottom, 18, for: .expanded)
             .contentMargins(.leading, 10, for: .compactLeading)
             .contentMargins(.trailing, 10, for: .compactTrailing)
@@ -48,23 +41,46 @@ private enum IslandLayout {
     static let compactHeight: CGFloat = 20
 }
 
-private struct CompactTrainingTimer: View {
+private struct CompactTrainingSide: View {
     let display: TrainingDisplay
+    let leading: Bool
 
     var body: some View {
-        if display.timer != nil || display.heldTime != nil {
-            HStack(spacing: 4) {
-                CountdownNumber(display: display)
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                    .layoutPriority(1)
-                if display.stage == .ready {
-                    PreparationTempo(running: display.timer != nil)
-                } else if let interval = display.timer {
-                    CountdownArc(interval: interval, appearance: display.appearance, size: 14)
+        let showsCountdown = display.timer != nil || display.heldTime != nil
+        Group {
+            if leading {
+                HStack(spacing: 3) {
+                    Image(systemName: display.symbol)
+                        .frame(width: 13)
+                    if showsCountdown { statusText }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(display.status)
+                .accessibilityHidden(!showsCountdown)
+            } else if showsCountdown {
+                HStack(spacing: 3) {
+                    CountdownNumber(display: display)
+                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        .layoutPriority(1)
+                    if display.stage == .ready {
+                        PreparationTempo(running: display.timer != nil)
+                    } else if let interval = display.timer {
+                        CountdownArc(interval: interval, appearance: display.appearance, size: 14)
+                    }
+                }
+            } else {
+                statusText.accessibilityLabel(display.status)
             }
-            .frame(width: IslandLayout.compactWidth, height: IslandLayout.compactHeight, alignment: .trailing)
         }
+        .font(.system(size: 12, weight: .semibold))
+        .foregroundStyle(display.appearance.accent)
+        .frame(width: IslandLayout.compactWidth, height: IslandLayout.compactHeight, alignment: .center)
+    }
+
+    private var statusText: some View {
+        Text(display.stage == .completed ? "完成" : display.shortStatus)
+            .lineLimit(1)
+            .minimumScaleFactor(0.78)
     }
 }
 
@@ -225,8 +241,10 @@ private struct TrainingIslandHUD: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: 10) {
-            TimerFace(display: display, size: typeSize.isAccessibilitySize ? 58 : 77)
+        let sideWidth: CGFloat = typeSize.isAccessibilitySize ? 58 : 80
+        HStack(alignment: .center, spacing: 10) {
+            TimerFace(display: display, size: sideWidth - 4)
+                .frame(width: sideWidth)
             VStack(alignment: .leading, spacing: 5) {
                 Label(display.shortStatus, systemImage: display.symbol)
                     .font(.headline.weight(.semibold))
@@ -244,9 +262,10 @@ private struct TrainingIslandHUD: View {
             .layoutPriority(1)
             CoachPortrait(
                 name: display.portrait, appearance: display.appearance,
-                width: typeSize.isAccessibilitySize ? 58 : 88, height: 91
+                width: sideWidth, height: 84
             )
         }
+        .frame(minHeight: 84)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.20), value: display.stage)
     }
 }
