@@ -633,10 +633,7 @@ final class GenLianUITests: XCTestCase {
             try VNImageRequestHandler(cgImage: pixels, options: [:]).perform([request])
             seen = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
                 .map { $0.filter { !$0.isWhitespace } }
-            if seen.contains(where: {
-                $0 == status || $0.hasPrefix(status + "第")
-                    || ($0.lowercased().hasPrefix("genlian") && $0.hasSuffix(status))
-            }) {
+            if seen.contains(where: { matchesActivityStatus($0, expected: status) }) {
                 let attachment = XCTAttachment(screenshot: screenshot)
                 attachment.name = name
                 attachment.lifetime = .keepAlways
@@ -646,5 +643,17 @@ final class GenLianUITests: XCTestCase {
         }
         captureSystem("\(name)-unexpected")
         XCTFail("\(name) did not render \(status). Recognized \(seen)")
+    }
+
+    private func matchesActivityStatus(_ recognized: String, expected status: String) -> Bool {
+        if recognized == status || recognized.hasPrefix(status + "第")
+            || (recognized.lowercased().hasPrefix("genlian") && recognized.hasSuffix(status)) {
+            return true
+        }
+
+        // Vision can merge the leading timer and the adjacent status as one token, e.g. "4准备".
+        guard (status == "准备" || status == "休息"), recognized.hasSuffix(status) else { return false }
+        let timer = String(recognized.dropLast(status.count))
+        return timer.range(of: "^(?:[0-9]{1,2}[:：])?[0-9]{1,2}$", options: .regularExpression) != nil
     }
 }
