@@ -56,17 +56,19 @@ final class GenLianUITests: XCTestCase {
 
     @MainActor
     func testLiveActivityRestExpiresWhileGenLianRemainsInBackground() async throws {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         for mode in ["auto", "manual"] {
             let app = launch(freezeClock: false, restMode: mode)
             tap(AccessibilityID.Dock.start, in: app)
             tap(AccessibilityID.Player.complete, in: app, timeout: 30)
             _ = ready(AccessibilityID.Rest.countdown, in: app, timeout: 20)
-            let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
-            settings.activate()
-            XCTAssertEqual(settings.state, .runningForeground)
+            XCUIDevice.shared.press(.home)
+            let wentToBackground = app.wait(for: .runningBackground, timeout: 3)
+                || app.wait(for: .runningBackgroundSuspended, timeout: 7)
+            XCTAssertTrue(wentToBackground, "GenLian did not move to the background after pressing Home")
             try await Task.sleep(for: .seconds(26))
             captureSystem("27-expired-\(mode)-compact")
-            settings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
             try await Task.sleep(for: .seconds(1))
             captureSystem("27-expired-\(mode)-expanded")
             XCTAssertNotEqual(app.state, .runningForeground)
