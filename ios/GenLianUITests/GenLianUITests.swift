@@ -9,9 +9,7 @@ final class GenLianUITests: XCTestCase {
         XCUIDevice.shared.press(.home)
 
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let icon = springboard.icons.matching(NSPredicate(
-            format: "label IN %@ OR identifier == %@", ["跟练", "GenLian"], "com.genlian.app"
-        )).firstMatch
+        let icon = homeIcon(in: springboard)
         for page in 0..<4 {
             if icon.waitForExistence(timeout: 2), icon.isHittable {
                 captureSystem("28-app-icon-home")
@@ -589,14 +587,27 @@ final class GenLianUITests: XCTestCase {
     }
 
     @MainActor
+    private func homeIcon(in springboard: XCUIApplication) -> XCUIElement {
+        springboard.icons.matching(NSPredicate(
+            format: "label IN %@ OR identifier == %@", ["跟练", "GenLian"], "com.genlian.app"
+        )).firstMatch
+    }
+
+    @MainActor
+    private func showHomeScreen(in springboard: XCUIApplication, for name: String) {
+        XCUIDevice.shared.press(.home)
+        // The screenshot needs SpringBoard's Home Screen, regardless of XCTest's process-state reporting.
+        let iconIsHittable = homeIcon(in: springboard).wait(for: \.isHittable, toEqual: true, timeout: 15)
+        if !iconIsHittable { captureSystem("\(name)-home-unexpected") }
+        XCTAssertTrue(iconIsHittable, "GenLian's Home Screen icon was not hittable before \(name)")
+    }
+
+    @MainActor
     private func captureActivitySurfaces(
         _ label: String, status: String, in app: XCUIApplication, island: (String, String)? = nil, expand: Bool = true
     ) async throws {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        XCUIDevice.shared.press(.home)
-        let backgrounded = app.wait(for: .runningBackground, timeout: 3)
-            || app.wait(for: .runningBackgroundSuspended, timeout: 7)
-        XCTAssertTrue(backgrounded)
+        showHomeScreen(in: springboard, for: "\(label)-cover-sheet")
 
         let edge = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.004))
         let destination = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.65))
@@ -607,8 +618,9 @@ final class GenLianUITests: XCTestCase {
             "\(label)-cover-sheet", status: status, region: CGRect(x: 0, y: 0, width: 1, height: 0.65)
         )
 
-        XCUIDevice.shared.press(.home)
-        captureSystem(island?.0 ?? "\(label)-compact")
+        let compactName = island?.0 ?? "\(label)-compact"
+        showHomeScreen(in: springboard, for: compactName)
+        captureSystem(compactName)
         if expand {
             springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
             try await captureMatchingActivity(
