@@ -1,3 +1,5 @@
+import UIKit
+import Vision
 import XCTest
 
 final class GenLianUITests: XCTestCase {
@@ -56,18 +58,20 @@ final class GenLianUITests: XCTestCase {
         let app = launch()
         tap(AccessibilityID.Dock.start, in: app)
         _ = ready(AccessibilityID.Player.prepare, in: app)
-        try await captureActivitySurfaces("29-training-ready", in: app)
+        try await captureActivitySurfaces("29-training-ready", status: "准备", in: app)
         tap(AccessibilityID.Player.prepare, in: app)
         _ = ready(AccessibilityID.Player.exercise("ex-floor-press"), in: app)
-        try await captureActivitySurfaces("29-training-action", in: app)
+        try await captureActivitySurfaces("29-training-action", status: "动作", in: app)
         tap(AccessibilityID.Player.pause, in: app)
         _ = ready(AccessibilityID.Player.pauseStatus, in: app)
-        try await captureActivitySurfaces("29-training-paused", in: app)
+        try await captureActivitySurfaces("29-training-paused", status: "暂停", in: app)
         tap(AccessibilityID.Player.resume, in: app)
         tap(AccessibilityID.Player.complete, in: app)
         tap(AccessibilityID.Player.enterRest, in: app)
         expectLabel(AccessibilityID.Rest.countdown, containing: "90", in: app)
-        try await captureActivitySurfaces("29-training-rest", in: app, island: ("26-live-activity-system", "26a-live-activity-expanded"))
+        try await captureActivitySurfaces(
+            "29-training-rest", status: "休息", in: app, island: ("26-live-activity-system", "26a-live-activity-expanded")
+        )
 
         endWorkout(in: app)
         tap(AccessibilityID.Record.archive, in: app)
@@ -75,7 +79,7 @@ final class GenLianUITests: XCTestCase {
     }
 
     @MainActor
-    func testLiveActivityCompletionAfterAllRecoverySets() async throws {
+    func testLiveActivityShowsCompletionAfterAllRecoverySets() async throws {
         let app = launch()
         reveal(AccessibilityID.Today.course("recovery"), in: app).tap()
         _ = reveal(AccessibilityID.Today.title, in: app, towardTop: true)
@@ -99,7 +103,7 @@ final class GenLianUITests: XCTestCase {
             }
         }
         expectLabel(AccessibilityID.Record.groups, containing: "6/6", in: app)
-        try await captureActivitySurfaces("29-training-complete", in: app, expand: false)
+        try await captureActivitySurfaces("29-training-complete", status: "训练完成", in: app, expand: false)
     }
 
     @MainActor
@@ -586,26 +590,61 @@ final class GenLianUITests: XCTestCase {
 
     @MainActor
     private func captureActivitySurfaces(
-        _ label: String, in app: XCUIApplication, island: (String, String)? = nil, expand: Bool = true
+        _ label: String, status: String, in app: XCUIApplication, island: (String, String)? = nil, expand: Bool = true
     ) async throws {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         XCUIDevice.shared.press(.home)
         let backgrounded = app.wait(for: .runningBackground, timeout: 3)
             || app.wait(for: .runningBackgroundSuspended, timeout: 7)
         XCTAssertTrue(backgrounded)
-        try await Task.sleep(for: .seconds(1))
-        captureSystem(island?.0 ?? "\(label)-compact")
-        if expand {
-            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
-            try await Task.sleep(for: .seconds(1))
-            captureSystem(island?.1 ?? "\(label)-expanded")
-            XCUIDevice.shared.press(.home)
-        }
+
         let edge = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.004))
         let destination = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.65))
         edge.press(forDuration: 0.05, thenDragTo: destination)
-        try await Task.sleep(for: .seconds(1))
-        captureSystem("\(label)-cover-sheet")
+        let allow = springboard.buttons.matching(NSPredicate(format: "label IN %@", ["Allow", "允许"])).firstMatch
+        if allow.waitForExistence(timeout: 3), allow.isHittable { allow.tap() }
+        try await captureMatchingActivity(
+            "\(label)-cover-sheet", status: status, region: CGRect(x: 0, y: 0, width: 1, height: 0.65)
+        )
+
+        XCUIDevice.shared.press(.home)
+        captureSystem(island?.0 ?? "\(label)-compact")
+        if expand {
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.025)).press(forDuration: 1)
+            try await captureMatchingActivity(
+                island?.1 ?? "\(label)-expanded", status: status, region: CGRect(x: 0, y: 0.73, width: 1, height: 0.27)
+            )
+        }
         app.activate()
+    }
+
+    @MainActor
+    private func captureMatchingActivity(_ name: String, status: String, region: CGRect) async throws {
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.recognitionLanguages = ["zh-Hans", "en-US"]
+        request.regionOfInterest = region
+        request.usesLanguageCorrection = false
+        var seen: [String] = []
+        for _ in 0..<12 {
+            try await Task.sleep(for: .seconds(1))
+            let screenshot = XCUIScreen.main.screenshot()
+            let pixels = try XCTUnwrap(screenshot.image.cgImage)
+            try VNImageRequestHandler(cgImage: pixels, options: [:]).perform([request])
+            seen = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+                .map { $0.filter { !$0.isWhitespace } }
+            if seen.contains(where: {
+                $0 == status || $0.hasPrefix(status + "第")
+                    || ($0.lowercased().hasPrefix("genlian") && $0.hasSuffix(status))
+            }) {
+                let attachment = XCTAttachment(screenshot: screenshot)
+                attachment.name = name
+                attachment.lifetime = .keepAlways
+                add(attachment)
+                return
+            }
+        }
+        captureSystem("\(name)-unexpected")
+        XCTFail("\(name) did not render \(status). Recognized \(seen)")
     }
 }
