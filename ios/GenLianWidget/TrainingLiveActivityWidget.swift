@@ -16,46 +16,62 @@ struct TrainingLiveActivityWidget: Widget {
                     Label(display.shortStatus, systemImage: display.symbol)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(HUD.orange)
+                        .frame(minHeight: 20, alignment: .leading)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     Text(display.roundLabel)
-                        .font(.caption2.monospacedDigit())
+                        .font(.caption.monospacedDigit())
                         .foregroundStyle(HUD.secondary)
+                        .frame(minHeight: 20, alignment: .trailing)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     TrainingIslandHUD(display: display)
                 }
             } compactLeading: {
                 Image(systemName: display.symbol)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(HUD.orange)
+                    .frame(
+                        width: IslandLayout.compactWidth, height: IslandLayout.compactHeight, alignment: .leading
+                    )
                     .accessibilityLabel(display.status)
             } compactTrailing: {
-                if let interval = display.timer {
-                    TimerDigits(interval: interval)
-                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                        .frame(width: 43, alignment: .trailing)
-                } else if let time = display.heldTime {
-                    Text(time)
-                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(HUD.primary)
-                        .accessibilityLabel("准备倒计时已停在 \(time)")
-                } else {
-                    Text(display.shortStatus)
-                        .font(.caption2.weight(.semibold))
-                        .lineLimit(1)
-                        .foregroundStyle(HUD.primary)
-                        .accessibilityLabel(display.status)
+                Group {
+                    if let interval = display.timer {
+                        TimerDigits(interval: interval)
+                    } else if let time = display.heldTime {
+                        Text(time).accessibilityLabel("准备倒计时已停在 \(time)")
+                    } else {
+                        Text(display.shortStatus).accessibilityLabel(display.status)
+                    }
                 }
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(HUD.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .multilineTextAlignment(.trailing)
+                .frame(
+                    width: IslandLayout.compactWidth, height: IslandLayout.compactHeight, alignment: .trailing
+                )
             } minimal: {
                 Image(systemName: display.symbol)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(HUD.orange)
                     .accessibilityLabel(display.status)
             }
+            .contentMargins(.horizontal, 26, for: .expanded)
+            .contentMargins(.top, 13, for: .expanded)
+            .contentMargins(.bottom, 18, for: .expanded)
+            .contentMargins(.leading, 10, for: .compactLeading)
+            .contentMargins(.trailing, 10, for: .compactTrailing)
             .keylineTint(HUD.orange)
         }
     }
+}
+
+private enum IslandLayout {
+    static let compactWidth: CGFloat = 38
+    static let compactHeight: CGFloat = 20
 }
 
 private struct TrainingDisplay {
@@ -180,8 +196,6 @@ private struct TrainingIslandHUD: View {
             }
             RoundTrack(display: display)
         }
-        .padding(.horizontal, 7)
-        .padding(.bottom, 5)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.20), value: display.stage)
     }
 }
