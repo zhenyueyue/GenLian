@@ -39,12 +39,16 @@ public struct CoachQueue {
         pending.append(prompt)
     }
 
-    public mutating func next(at now: ContinuousClock.Instant = .now) -> CoachPrompt? {
-        while !pending.isEmpty {
-            let next = pending.removeFirst()
-            if next.expiresAt.map({ $0 > now }) != false { return next }
+    public mutating func firstReady(at now: ContinuousClock.Instant = .now) -> CoachPrompt? {
+        while let expiresAt = pending.first?.expiresAt, expiresAt <= now {
+            pending.removeFirst()
         }
-        return nil
+        return pending.first
+    }
+
+    public mutating func next(at now: ContinuousClock.Instant = .now) -> CoachPrompt? {
+        guard firstReady(at: now) != nil else { return nil }
+        return pending.removeFirst()
     }
 
     public mutating func cancelPending() { pending.removeAll() }
@@ -123,8 +127,17 @@ public enum CoachPolicy {
     }
 
     public static func context(_ session: WorkoutSession) -> String {
-        let phase = session.phase == .nextTransition ? WorkoutPhase.active : session.phase
-        return "\(session.id)-\(phase.rawValue)-\(key(session.currentKey))-\(session.isPaused)-\(session.needsResume)"
+        var phase = session.phase
+        var set = session.currentKey
+        if phase == .restReady, let next = session.upcomingPosition {
+            // A rest-end cue already names the next exercise before the user confirms it.
+            let exercise = session.plan.exercises[next.exerciseIndex]
+            set = SetKey(position: next, side: exercise.unilateral ? .left : .bilateral)
+            phase = .active
+        } else if phase == .nextTransition {
+            phase = .active
+        }
+        return "\(session.id)-\(phase.rawValue)-\(key(set))-\(session.isPaused)-\(session.needsResume)"
     }
 
     public static func allowsNotification(_ preferences: VoiceCoachPreferences, permitted: Bool) -> Bool {

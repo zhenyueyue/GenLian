@@ -101,6 +101,41 @@ struct CoachPolicyTests {
         #expect(queue.next() == nil)
     }
 
+    @Test func countdownCanExpireWhileTheAudioSessionActivates() {
+        var queue = CoachQueue()
+        let now = ContinuousClock.now
+        let countdown = CoachPrompt(id: "countdown", text: "还剩十秒。", expiresAt: now + .seconds(1))
+        let exercise = CoachPrompt(id: "exercise", text: "接下来是俯身单臂哑铃划船。")
+        queue.enqueue(countdown)
+        queue.enqueue(exercise)
+        #expect(queue.firstReady(at: now) == countdown)
+        #expect(queue.pending == [countdown, exercise])
+        #expect(queue.next(at: now + .seconds(1)) == exercise)
+        #expect(queue.next(at: now + .seconds(1)) == nil)
+    }
+
+    @Test func confirmingRestKeepsTheCueForTheUpcomingExercise() throws {
+        let rest = RestSettings(exerciseSeconds: 30, roundSeconds: 30, autoAdvance: false)
+        let training = try CoachFixture(rest: rest)
+        try training.startRest()
+        let resting = training.session
+        try training.advance(30)
+        let ready = training.session
+        #expect(ready.phase == .restReady)
+        #expect(CoachPolicy.context(resting) != CoachPolicy.context(ready))
+        #expect(CoachPolicy.prompts(from: resting, to: ready, preferences: .init()).first?.text.contains("俯身单臂哑铃划船") == true)
+
+        try training.send(.finishRest(try #require(ready.restOwner)))
+        let transition = training.session
+        #expect(transition.phase == .nextTransition)
+        #expect(CoachPolicy.context(ready) == CoachPolicy.context(transition))
+        try training.send(.startPreparedAction(.nextTransition, transition.position))
+        let active = training.session
+        #expect(CoachPolicy.context(ready) == CoachPolicy.context(active))
+        try training.send(.pause)
+        #expect(CoachPolicy.context(active) != CoachPolicy.context(training.session))
+    }
+
     @Test func restAdjustmentReplacesDeadlineAndRepeatedTicksKeepItStable() throws {
         let training = try CoachFixture()
         try training.startRest()
@@ -210,12 +245,12 @@ private struct CoachFixture {
     let store: CoachStore
     let controller: TrainingController
 
-    init(_ id: String = "strength-a") throws {
+    init(_ id: String = "strength-a", rest: RestSettings? = nil) throws {
         let clock = CoachClock()
         let store = CoachStore()
         let controller = try TrainingController(store: store, clock: clock)
         let plan = try #require(BuiltInCatalog.load().first { $0.id == id })
-        try #require(try controller.start(plan))
+        try #require(try controller.start(plan, rest: rest))
         self.clock = clock
         self.store = store
         self.controller = controller
