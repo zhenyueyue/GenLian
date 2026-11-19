@@ -29,15 +29,16 @@ struct GenLianApp: App {
 private struct TrainingShell: View {
     let model: TrainingAppModel
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.warmReduceTransparency) private var reduceTransparency
-    @Namespace private var mediaAnimation
     @State private var detailIndex: Int?
     @State private var showingWorkout = false
-    @State private var showingArchive = false
+    @State private var homeTab: HomeTab = .today
     @State private var focusedHistoryID: UUID?
     @State private var justArchivedID: UUID?
     @State private var setupPlan: WorkoutPlan?
+
+    private enum HomeTab: Hashable {
+        case today, start, archive
+    }
 
     private var startTitle: String {
         guard let current = model.archive.current else { return "开始今日训练" }
@@ -62,18 +63,18 @@ private struct TrainingShell: View {
                 if session.phase == .summary {
                     WorkoutSummaryView(session: session) {
                         guard model.archiveFinished(session.id) else { return }
-                        route {
+                        switchPage {
                             justArchivedID = session.id
                             focusedHistoryID = nil
-                            showingArchive = true
+                            homeTab = .archive
                             showingWorkout = false
                         }
                     } close: {
-                        route { showingWorkout = false }
+                        switchPage { showingWorkout = false }
                     }
                 } else {
-                    WorkoutPlayerView(model: model, session: session, mediaAnimation: mediaAnimation) {
-                        route { showingWorkout = false }
+                    WorkoutPlayerView(model: model, session: session) {
+                        switchPage { showingWorkout = false }
                     }
                 }
             } else if let plan = model.plan {
@@ -122,61 +123,62 @@ private struct TrainingShell: View {
 
     private func home(_ plan: WorkoutPlan) -> some View {
         ZStack {
-            Group {
-                if reduceTransparency {
-                    VStack(spacing: 0) {
-                        homePage(plan).clipped()
-                        homeDock
-                    }
-                } else {
-                    homePage(plan).safeAreaInset(edge: .bottom, spacing: 0) {
-                        homeDock
-                    }
-                }
-            }
-            .accessibilityHidden(detailIndex != nil)
-            .allowsHitTesting(detailIndex == nil)
+            homeTabs(plan)
+                .accessibilityHidden(detailIndex != nil)
+                .allowsHitTesting(detailIndex == nil)
 
             if let detailIndex, plan.exercises.indices.contains(detailIndex) {
                 WorkoutDetailView(
-                    plan: plan, load: model.setup(for: plan).load, index: detailIndex, mediaAnimation: mediaAnimation,
-                    changeIndex: { index in route { self.detailIndex = index } },
-                    close: { route { self.detailIndex = nil } },
+                    plan: plan, load: model.setup(for: plan).load, index: detailIndex,
+                    changeIndex: { index in switchPage { self.detailIndex = index } },
+                    close: { switchPage { self.detailIndex = nil } },
                     startTitle: model.archive.current == nil ? "进入全屏跟练" : startTitle,
                     canStart: canStart, start: openOrStart
                 )
-                .transition(.opacity)
                 .zIndex(1)
             }
         }
     }
 
-    @ViewBuilder
-    private func homePage(_ plan: WorkoutPlan) -> some View {
-        if showingArchive {
-            TrainingHistoryView(archive: model.archive, justArchivedID: justArchivedID, selectedID: $focusedHistoryID)
-        } else {
-            TodayView(
-                model: model, plan: plan, startTitle: startTitle, start: openOrStart,
-                showSetup: { setupPlan = plan },
-                showDetail: { index in route { detailIndex = index } }
-            )
+    private func homeTabs(_ plan: WorkoutPlan) -> some View {
+        TabView(selection: tabSelection) {
+            Tab("今日", systemImage: "safari", value: .today) {
+                TodayView(
+                    model: model, plan: plan, startTitle: startTitle, start: openOrStart,
+                    showSetup: { setupPlan = plan },
+                    showDetail: { index in switchPage { detailIndex = index } }
+                )
+                .modifier(HomeTabAppearance())
+            }
+            .accessibilityIdentifier(AccessibilityID.Dock.today)
+
+            Tab("开练", systemImage: "play", value: .start) {
+                Color.clear.accessibilityHidden(true)
+            }
+            .disabled(!canStart)
+            .accessibilityIdentifier(AccessibilityID.Dock.start)
+
+            Tab("档案", systemImage: "square.stack.3d.up", value: .archive) {
+                TrainingHistoryView(archive: model.archive, justArchivedID: justArchivedID, selectedID: $focusedHistoryID)
+                    .modifier(HomeTabAppearance())
+            }
+            .accessibilityIdentifier(AccessibilityID.Dock.archive)
         }
+        .tint(.white)
     }
 
-    private var homeDock: some View {
-        WarmDock(
-            showingArchive: showingArchive, canStart: canStart,
-            openToday: { route { showingArchive = false } }, start: openOrStart,
-            openArchive: {
-                route {
-                    focusedHistoryID = nil
-                    showingArchive = true
+    private var tabSelection: Binding<HomeTab> {
+        Binding(get: { homeTab }, set: { tab in
+            if tab == .start {
+                // Opening the full-screen player leaves the current navigation tab selected.
+                openOrStart()
+            } else {
+                switchPage {
+                    if tab == .archive { focusedHistoryID = nil }
+                    homeTab = tab
                 }
             }
-        )
-        .padding(.horizontal, Warm.pageEdge)
-        .padding(.vertical, 7)
+        })
     }
 
     private func openOrStart() {
@@ -188,14 +190,25 @@ private struct TrainingShell: View {
     }
 
     private func showPlayer() {
-        route {
+        switchPage {
             detailIndex = nil
             showingWorkout = true
         }
     }
 
-    private func route(_ update: () -> Void) {
-        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.28), update)
+    private func switchPage(_ update: () -> Void) {
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction, update)
+    }
+}
+
+private struct HomeTabAppearance: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .tint(Warm.accent)
+            .toolbarColorScheme(.dark, for: .tabBar)
+            .toolbarBackgroundVisibility(.visible, for: .tabBar)
     }
 }
 

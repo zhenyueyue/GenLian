@@ -34,8 +34,7 @@ struct TrainingHistoryView: View {
                 .accessibilityHidden(selected != nil)
                 .allowsHitTesting(selected == nil)
             if let session = selected {
-                WorkoutHistoryDetailView(session: session) { navigate { self.selectedID = nil } }
-                    .transition(.opacity)
+                WorkoutHistoryDetailView(session: session) { selectedID = nil }
                     .zIndex(1)
             }
         }
@@ -160,16 +159,12 @@ struct TrainingHistoryView: View {
     private func calendar(_ history: TrainingHistory) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             TrainingMonthView(month: month, history: history, selectedDay: selectedDay) { delta in
-                navigate {
-                    monthOverride = month.addingMonths(delta)
-                    selectedDay = nil
-                }
+                monthOverride = month.addingMonths(delta)
+                selectedDay = nil
             } selectDay: { day, group in
                 if let first = group.records.first {
-                    navigate {
-                        selectedDay = day
-                        if group.records.count == 1 { selectedID = first.id }
-                    }
+                    selectedDay = day
+                    if group.records.count == 1 { selectedID = first.id }
                 }
             }
             if let selectedDay {
@@ -200,7 +195,7 @@ struct TrainingHistoryView: View {
                 Text("刚刚收入档案 · 点击核对逐组明细")
                     .font(.caption.weight(.semibold)).foregroundStyle(Warm.accentText)
             }
-            Button { navigate { selectedID = session.id } } label: {
+            Button { selectedID = session.id } label: {
                 ZStack(alignment: .bottomLeading) {
                     Color.clear.aspectRatio(16.0 / 10, contentMode: .fit).accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 6) {
@@ -244,7 +239,7 @@ struct TrainingHistoryView: View {
 
     private func recordRow(_ session: WorkoutSession) -> some View {
         let dates = RecordDates(session, fallback: timeZone)
-        return Button { navigate { selectedID = session.id } } label: {
+        return Button { selectedID = session.id } label: {
             HStack(alignment: .center, spacing: 10) {
                 if !typeSize.isAccessibilitySize {
                     WarmPhotoView(photo: WarmMedia.plans[session.plan.id]?.wide)
@@ -282,10 +277,6 @@ struct TrainingHistoryView: View {
         }
         .buttonStyle(.plain)
         .warmGlass(.light, in: RoundedRectangle(cornerRadius: 16), interactive: true)
-    }
-
-    private func navigate(_ action: () -> Void) {
-        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.22), action)
     }
 }
 

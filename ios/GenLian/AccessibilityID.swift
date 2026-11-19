@@ -9,6 +9,7 @@ enum AccessibilityID {
     }
 
     enum Dock {
+        static let today = "dock.today"
         static let start = "dock.start"
         static let archive = "dock.archive"
     }

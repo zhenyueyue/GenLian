@@ -5,13 +5,11 @@ struct WorkoutDetailView: View {
     let plan: WorkoutPlan
     let load: RecordedLoad
     let index: Int
-    let mediaAnimation: Namespace.ID
     let changeIndex: @MainActor (Int) -> Void
     let close: @MainActor () -> Void
     var startTitle: String
     var canStart: Bool
     let start: @MainActor () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
     @ScaledMetric(relativeTo: .title2) private var titleSize: CGFloat = 26
 
@@ -75,9 +73,7 @@ struct WorkoutDetailView: View {
 
     private func art(height: CGFloat) -> some View {
         ZStack(alignment: .bottomLeading) {
-            let photo = WarmPhotoView(photo: WarmMedia.stage(exercise.id)?.contained(), message: "暂无该动作姿态图")
-            if reduceMotion { photo }
-            else { photo.matchedGeometryEffect(id: exercise.id, in: mediaAnimation) }
+            WarmPhotoView(photo: WarmMedia.stage(exercise.id)?.contained(), message: "暂无该动作姿态图")
             LinearGradient(stops: [
                 .init(color: Warm.canvas.opacity(0.78), location: 0),
                 .init(color: .clear, location: 0.34),

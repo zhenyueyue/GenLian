@@ -5,7 +5,6 @@ import UIKit
 struct WorkoutPlayerView: View {
     let model: TrainingAppModel
     let session: WorkoutSession
-    let mediaAnimation: Namespace.ID
     let returnToToday: @MainActor () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.warmReduceTransparency) private var reduceTransparency
@@ -67,20 +66,16 @@ struct WorkoutPlayerView: View {
 
     private var stageBackground: some View {
         GeometryReader { proxy in
-            let photo = WarmPhotoView(photo: WarmMedia.stage(exercise.id), immersive: true)
             let intensity: Double = restPhase ? 0.72 : (session.phase == .setComplete ? 0.74 : (dim ? 0.76 : 1))
             ZStack {
-                Group {
-                    if reduceMotion { photo }
-                    else { photo.matchedGeometryEffect(id: exercise.id, in: mediaAnimation) }
-                }
-                .id(exercise.id)
-                .transition(.opacity)
-                .colorMultiply(Color(white: intensity))
-                .saturation(restPhase ? 0.82 : 1)
-                .scaleEffect(!reduceMotion && restPhase ? 1.015 : 1)
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.32), value: exercise.id)
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.5), value: restPhase)
+                WarmPhotoView(photo: WarmMedia.stage(exercise.id), immersive: true)
+                    .id(exercise.id)
+                    .transition(.opacity)
+                    .colorMultiply(Color(white: intensity))
+                    .saturation(restPhase ? 0.82 : 1)
+                    .scaleEffect(!reduceMotion && restPhase ? 1.015 : 1)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.32), value: exercise.id)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.5), value: restPhase)
                 Warm.smoke.opacity(restPhase ? 0.32 : (dim ? 0.26 : 0))
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.5), value: restPhase)
                 VStack(spacing: 0) {
