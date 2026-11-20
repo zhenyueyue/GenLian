@@ -230,11 +230,11 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
             >
               WARM PERFORMANCE · 暖光运动 · 力量 / 有氧 / 恢复跨课程一致性验证
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#191D22] mt-1">
-              Warm Performance · 暖光运动（正式系统校验版）
+            <h1 className="font-editorial-serif text-xl sm:text-2xl font-semibold tracking-tight text-[#1C1917] mt-1">
+              Warm Performance · 暖光运动（纸间改版）
             </h1>
-            <p className="mt-1.5 text-sm text-[#4D545E] leading-relaxed">
-              保持同一套色彩（#F9F7F3 / #D44E24 / #191D22）、字体排版、导航与控件语言，同步验证力量 A 与有氧训练的动态能量，并已修复档案底栏激活态、亮画面小字可读性、器械完整构图与休息通透度。
+            <p className="mt-1.5 text-sm text-[#44403C] leading-relaxed">
+              骨色纸 #F4F1EB、暖墨 #1C1917 与柿色 #C2410C。衬线标题、圆角课程卡和实色底栏在力量、有氧、恢复三课上使用同一套版面。
             </p>
           </div>
 
@@ -255,8 +255,8 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   onClick={() => handleSelectViewTab(item.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                     active
-                      ? 'bg-[#191D22] text-[#F9F7F3]'
-                      : 'text-[#4D545E] hover:text-[#191D22]'
+                      ? 'bg-[#1C1917] text-[#F4F1EB]'
+                      : 'text-[#44403C] hover:text-[#1C1917]'
                   }`}
                 >
                   {item.label}
@@ -278,8 +278,8 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   onClick={() => handleWorkspaceJump(scene.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     active
-                      ? 'bg-[#D44E24] text-white shadow-sm'
-                      : 'bg-[#F3F2EE] text-[#4D545E] hover:bg-[#E7E5DC] hover:text-[#191D22]'
+                      ? 'bg-[#C2410C] text-white shadow-sm'
+                      : 'bg-[#F3F2EE] text-[#44403C] hover:bg-[#E7E5DC] hover:text-[#1C1917]'
                   }`}
                 >
                   {scene.label}
@@ -298,8 +298,8 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   onClick={() => handleWorkspaceJump(scene.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap ${
                     active
-                      ? 'bg-[#191D22] text-white border-[#191D22]'
-                      : 'bg-white text-[#4D545E] border-[#DCD9D0] hover:border-[#191D22]'
+                      ? 'bg-[#1C1917] text-white border-[#1C1917]'
+                      : 'bg-white text-[#44403C] border-[#DCD9D0] hover:border-[#1C1917]'
                   }`}
                 >
                   {scene.label}
@@ -321,8 +321,8 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   onClick={() => handleCourseShortcut(course.idx)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                     isCurrentSingle
-                      ? 'bg-[#191D22] text-[#F9F7F3]'
-                      : 'bg-[#F3F2EE] text-[#4D545E] hover:text-[#191D22]'
+                      ? 'bg-[#1C1917] text-[#F4F1EB]'
+                      : 'bg-[#F3F2EE] text-[#44403C] hover:text-[#1C1917]'
                   }`}
                 >
                   {course.label}
@@ -350,7 +350,7 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                 >
                   COURSE 01 · 力量 A：全身均衡循环
                 </div>
-                <div className="text-sm font-medium text-[#4D545E] mt-0.5">
+                <div className="text-sm font-medium text-[#44403C] mt-0.5">
                   专注肌肉发力控制与稳健节奏 · 90s 组间安静恢复
                 </div>
               </div>
@@ -377,7 +377,7 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                 >
                   COURSE 02 · 有氧：轻负重代谢循环
                 </div>
-                <div className="text-sm font-medium text-[#4D545E] mt-0.5">
+                <div className="text-sm font-medium text-[#44403C] mt-0.5">
                   鲜明身体动态与 30s 有氧训练间歇 · 零霓虹零游戏化 HUD
                 </div>
               </div>
@@ -407,14 +407,14 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                 >
                   CONSISTENCY & POLISH AUDIT
                 </div>
-                <h2 className="text-lg font-semibold text-[#191D22] mt-0.5">
+                <h2 className="text-lg font-semibold text-[#1C1917] mt-0.5">
                   三课视觉一致性与本轮 4 项精确修复
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => handleCourseShortcut(3)}
-                className="text-xs font-semibold text-[#B83E18] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-[#9A3412] hover:underline cursor-pointer"
               >
                 切至恢复日核对舒展态 →
               </button>
@@ -430,8 +430,8 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                     border: '1px solid rgba(25,29,34,0.08)',
                   }}
                 >
-                  <div className="text-sm font-semibold text-[#191D22]">{item.title}</div>
-                  <p className="mt-1.5 text-xs text-[#4D545E] leading-relaxed">{item.detail}</p>
+                  <div className="text-sm font-semibold text-[#1C1917]">{item.title}</div>
+                  <p className="mt-1.5 text-xs text-[#44403C] leading-relaxed">{item.detail}</p>
                 </div>
               ))}
             </div>
@@ -448,8 +448,8 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
               >
                 FORMAL SYSTEM · Warm Performance（暖光运动）
               </div>
-              <div className="text-sm font-medium text-[#4D545E] mt-0.5">
-                #F9F7F3 暖白矿物纸 × #191D22 深石墨 × #D44E24 单一品牌橙
+              <div className="text-sm font-medium text-[#44403C] mt-0.5">
+                #F4F1EB 骨色纸 × #1C1917 暖墨 × #C2410C 柿色
               </div>
             </div>
             <IPhoneFrame deviceSize={deviceSize} statusBarTone={warmStatusTone}>
@@ -478,11 +478,11 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
             return (
               <div className="flex flex-col items-center w-full">
                 <div className="mb-4 text-center">
-                  <div className="text-xs font-semibold tracking-wider text-[#4D545E]">
+                  <div className="text-xs font-semibold tracking-wider text-[#44403C]">
                     REFERENCE · 方案 {refTheme.code === 'A' ? '1' : '2'} {refTheme.nameZh}（
                     {refTheme.nameEn}）
                   </div>
-                  <div className="text-sm font-medium text-[#4D545E] mt-0.5">
+                  <div className="text-sm font-medium text-[#44403C] mt-0.5">
                     {refTheme.tagline}
                   </div>
                 </div>
@@ -534,7 +534,7 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   >
                     01 · COLOR SYSTEM SPEC
                   </div>
-                  <h2 className="text-lg font-semibold text-[#191D22] mt-0.5">
+                  <h2 className="text-lg font-semibold text-[#1C1917] mt-0.5">
                     最终统一配色规范（60 / 30 / 10）
                   </h2>
                 </div>
@@ -559,17 +559,17 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                     />
                     <div className="min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-semibold text-[#191D22]">
+                        <span className="text-sm font-semibold text-[#1C1917]">
                           {swatch.name}
                         </span>
-                        <span className="font-mono-num text-xs font-semibold text-[#4D545E]">
+                        <span className="font-mono-num text-xs font-semibold text-[#44403C]">
                           {swatch.hex}
                         </span>
                       </div>
                       <div className="text-[11px] font-medium text-[#686F7A] mt-0.5">
                         {swatch.role}
                       </div>
-                      <p className="text-xs text-[#4D545E] leading-relaxed mt-1">
+                      <p className="text-xs text-[#44403C] leading-relaxed mt-1">
                         {swatch.usage}
                       </p>
                     </div>
@@ -588,7 +588,7 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   >
                     02 · TYPOGRAPHY HIERARCHY
                   </div>
-                  <h2 className="text-lg font-semibold text-[#191D22] mt-0.5">
+                  <h2 className="text-lg font-semibold text-[#1C1917] mt-0.5">
                     字体层级与数字等宽排版
                   </h2>
                 </div>
@@ -604,12 +604,12 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                     className="py-3.5 flex flex-wrap items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-[#191D22]">{row.level}</div>
+                      <div className="text-sm font-semibold text-[#1C1917]">{row.level}</div>
                       <div className="text-xs text-[#686F7A] font-mono-num mt-0.5">
                         {row.font} · {row.spec}
                       </div>
                     </div>
-                    <div className="text-sm font-semibold text-[#191D22] font-display-b tabular-nums bg-[#F9F7F3] px-3 py-1.5 rounded-lg border border-[#E5E3DC]">
+                    <div className="text-sm font-semibold text-[#1C1917] font-display-b tabular-nums bg-[#F4F1EB] px-3 py-1.5 rounded-lg border border-[#E5E3DC]">
                       {row.sample}
                     </div>
                   </div>
@@ -627,7 +627,7 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                   >
                     03 · KEY COMPONENT ARCHITECTURE
                   </div>
-                  <h2 className="text-lg font-semibold text-[#191D22] mt-0.5">
+                  <h2 className="text-lg font-semibold text-[#1C1917] mt-0.5">
                     关键组件与五核心页面规范
                   </h2>
                 </div>
@@ -646,22 +646,22 @@ export const WarmPerformanceWorkspace: React.FC<WarmPerformanceWorkspaceProps> =
                       border: '1px solid rgba(25,29,34,0.08)',
                     }}
                   >
-                    <div className="text-sm font-semibold text-[#191D22]">{item.title}</div>
-                    <p className="mt-1.5 text-xs text-[#4D545E] leading-relaxed">
+                    <div className="text-sm font-semibold text-[#1C1917]">{item.title}</div>
+                    <p className="mt-1.5 text-xs text-[#44403C] leading-relaxed">
                       {item.detail}
                     </p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-[#ECEAE2] flex flex-wrap items-center justify-between gap-3 text-xs text-[#4D545E]">
+              <div className="mt-4 pt-4 border-t border-[#ECEAE2] flex flex-wrap items-center justify-between gap-3 text-xs text-[#44403C]">
                 <span>
                   三课（力量、有氧、恢复）共用同一套字体、配色、导航与控件交互规范。
                 </span>
                 <button
                   type="button"
                   onClick={() => handleSelectViewTab('dual_course')}
-                  className="font-semibold text-[#B83E18] hover:underline cursor-pointer shrink-0"
+                  className="font-semibold text-[#9A3412] hover:underline cursor-pointer shrink-0"
                 >
                   切回力量 A × 有氧并排验证 →
                 </button>

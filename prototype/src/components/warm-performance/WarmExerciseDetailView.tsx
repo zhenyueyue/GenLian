@@ -139,8 +139,8 @@ export const WarmExerciseDetailView: React.FC<WarmExerciseDetailViewProps> = ({
                 {exercise.isUnilateral ? ' · 单侧交替' : ''}
               </div>
               <h1
-                className={`mt-1 font-semibold tracking-[-0.02em] leading-[1.16] ${
-                  isSE ? 'text-[23px]' : 'text-[26px]'
+                className={`mt-1 font-editorial-serif font-semibold tracking-[-0.03em] leading-[1.14] ${
+                  isSE ? 'text-[26px]' : 'text-[30px]'
                 }`}
                 style={{ color: WARM_TOKENS.inkPrimary }}
               >
@@ -164,7 +164,7 @@ export const WarmExerciseDetailView: React.FC<WarmExerciseDetailViewProps> = ({
           className="pointer-events-none absolute inset-x-0 top-0 h-44"
           style={{
             background:
-              'radial-gradient(110% 80% at 85% 18%, rgba(212, 78, 36, 0.05) 0%, rgba(232, 224, 210, 0.24) 48%, rgba(249, 247, 243, 0) 100%)',
+              'radial-gradient(110% 80% at 85% 18%, rgba(194, 65, 12, 0.06) 0%, rgba(232, 224, 210, 0.22) 48%, rgba(244, 241, 235, 0) 100%)',
           }}
         />
         <div
@@ -271,7 +271,7 @@ export const WarmExerciseDetailView: React.FC<WarmExerciseDetailViewProps> = ({
           style={{
             paddingBottom: `calc(${isSE ? '12px' : '20px'} + env(safe-area-inset-bottom, 0px))`,
             background:
-              'linear-gradient(180deg, rgba(249,247,243,0) 0%, rgba(249,247,243,0.08) 100%)',
+              'linear-gradient(180deg, rgba(244,241,235,0) 0%, rgba(244,241,235,0.2) 100%)',
           }}
         >
           <GlassDock className="pointer-events-auto">
@@ -283,7 +283,7 @@ export const WarmExerciseDetailView: React.FC<WarmExerciseDetailViewProps> = ({
                 backgroundColor: WARM_TOKENS.accent,
                 color: WARM_TOKENS.accentContrastText,
                 boxShadow:
-                  'inset 0 1px 0 rgba(255,255,255,0.34), 0 8px 20px -6px rgba(212,78,36,0.38)',
+                  '0 10px 22px -12px rgba(194, 65, 12, 0.7)',
               }}
             >
               <Play className="w-4 h-4 fill-current" />

@@ -345,18 +345,18 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen bg-[#F3F2EE] text-[#141413] flex flex-col ${
+      className={`min-h-screen bg-[#E7E1D6] text-[#1C1917] flex flex-col ${
         a11y.reduceTransparency ? 'lg-a11y-reduce-transparency' : ''
       } ${a11y.increaseContrast ? 'lg-a11y-increase-contrast' : ''}`}
     >
       {/* Strict 3-Zone Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-[#F3F2EE]/92 backdrop-blur-md border-b border-[#DCD9D0]">
+      <header className="sticky top-0 z-40 bg-[#F4F1EB]/92 backdrop-blur-md border-b border-[#DDD4C6]">
         <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between gap-8">
-          <span className="text-lg font-bold tracking-tight text-[#141413] whitespace-nowrap shrink-0">
-            跟练 · 视觉方向探索
+          <span className="font-editorial-serif text-[22px] font-semibold tracking-[-0.03em] text-[#1C1917] whitespace-nowrap shrink-0">
+            跟练
           </span>
 
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[#5E5E59]">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[#5C564F]">
             {headerQuickLinks.map((item) => (
               <button
                 key={item.id}
@@ -364,8 +364,8 @@ export default function App() {
                 onClick={item.onClick}
                 className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer py-1 border-b-2 ${
                   item.active
-                    ? 'text-[#141413] border-[#141413] font-semibold'
-                    : 'border-transparent hover:text-[#141413]'
+                    ? 'text-[#1C1917] border-[#C2410C] font-semibold'
+                    : 'border-transparent hover:text-[#1C1917]'
                 }`}
               >
                 {item.label}
@@ -377,7 +377,7 @@ export default function App() {
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 text-xs font-semibold text-[#F3F2EE] bg-[#141413] rounded-lg hover:bg-[#2C2C2A] transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-[#F4F1EB] bg-[#1C1917] rounded-full hover:bg-[#292524] transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>重置回今日</span>
@@ -387,7 +387,7 @@ export default function App() {
       </header>
 
       {/* Workspace Mode & Hardware Toolbar (Outside <header>) */}
-      <div className="border-b border-[#DCD9D0] bg-[#FAF9F6]">
+      <div className="border-b border-[#DDD4C6] bg-[#F7F4EF]">
         <div className="max-w-[1440px] mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1.5">
             {WORKSPACE_MODES.map((m) => (
@@ -397,8 +397,8 @@ export default function App() {
                 onClick={() => handleSelectWorkspaceMode(m.id)}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                   viewMode === m.id
-                    ? 'bg-[#141413] text-[#F3F2EE]'
-                    : 'bg-white border border-[#DCD9D0] text-[#4A4A47] hover:border-[#141413] hover:text-[#141413]'
+                    ? 'bg-[#1C1917] text-[#F4F1EB]'
+                    : 'bg-white border border-[#DDD4C6] text-[#44403C] hover:border-[#1C1917] hover:text-[#1C1917]'
                 }`}
               >
                 {m.label}
@@ -414,7 +414,7 @@ export default function App() {
                   type="button"
                   onClick={item.onClick}
                   className={`px-2 py-1 rounded text-[11px] font-medium whitespace-nowrap ${
-                    item.active ? 'bg-[#141413] text-white' : 'bg-white text-[#5E5E59]'
+                    item.active ? 'bg-[#1C1917] text-[#F4F1EB]' : 'bg-white text-[#5C564F]'
                   }`}
                 >
                   {item.label}
@@ -427,8 +427,8 @@ export default function App() {
               onClick={() => sim.setUseTestVideoStream(!sim.useTestVideoStream)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                 sim.useTestVideoStream
-                  ? 'bg-[#141413] text-white border-[#141413]'
-                  : 'bg-white text-[#4A4A47] border-[#DCD9D0] hover:border-[#141413]'
+                  ? 'bg-[#1C1917] text-[#F4F1EB] border-[#1C1917]'
+                  : 'bg-white text-[#44403C] border-[#DDD4C6] hover:border-[#1C1917]'
               }`}
             >
               <Film className="w-3.5 h-3.5" />
@@ -445,14 +445,14 @@ export default function App() {
               }
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                 a11y.reduceTransparency
-                  ? 'bg-[#141413] text-white border-[#141413]'
-                  : 'bg-white text-[#4A4A47] border-[#DCD9D0] hover:border-[#141413]'
+                  ? 'bg-[#1C1917] text-[#F4F1EB] border-[#1C1917]'
+                  : 'bg-white text-[#44403C] border-[#DDD4C6] hover:border-[#1C1917]'
               }`}
             >
               <span>{a11y.reduceTransparency ? '减弱透明：开' : '减弱透明'}</span>
             </button>
 
-            <div className="inline-flex p-0.5 bg-[#E6E4DC] rounded-lg">
+            <div className="inline-flex p-0.5 bg-[#E7E1D6] rounded-full">
               {(
                 [
                   { id: 'promax', label: '15 Pro Max' },
@@ -466,8 +466,8 @@ export default function App() {
                   onClick={() => setDeviceSize(d.id)}
                   className={`px-2.5 py-1 text-[11.5px] font-medium rounded-md transition-colors cursor-pointer ${
                     deviceSize === d.id
-                      ? 'bg-white text-[#141413] shadow-xs'
-                      : 'text-[#5E5E59] hover:text-[#141413]'
+                      ? 'bg-white text-[#1C1917] shadow-xs'
+                      : 'text-[#5C564F] hover:text-[#1C1917]'
                   }`}
                 >
                   {d.label}

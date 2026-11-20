@@ -236,7 +236,7 @@ export const WarmAppShell: React.FC<WarmAppShellProps> = ({
                 className="pointer-events-none h-8 w-full"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(249,247,243,0) 0%, rgba(249,247,243,0.06) 100%)',
+                    'linear-gradient(180deg, rgba(244,241,235,0) 0%, rgba(244,241,235,0.5) 100%)',
                 }}
               />
               <GlassDock
@@ -265,8 +265,8 @@ export const WarmAppShell: React.FC<WarmAppShellProps> = ({
                           className="warm-lg-interactive relative h-[48px] rounded-full flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
                           style={{
                             color: isTodayActive
-                              ? WARM_TOKENS.accentTextOnLight
-                              : 'rgba(25, 29, 34, 0.72)',
+                              ? WARM_TOKENS.canvasBg
+                              : WARM_TOKENS.inkSecondary,
                           }}
                         >
                           {isTodayActive && (
@@ -311,12 +311,9 @@ export const WarmAppShell: React.FC<WarmAppShellProps> = ({
                           <span
                             className="w-6 h-6 rounded-full flex items-center justify-center transition-all"
                             style={{
-                              background:
-                                'linear-gradient(155deg, rgba(212, 78, 36, 0.22) 0%, rgba(212, 78, 36, 0.10) 100%)',
-                              border: '0.75px solid rgba(212, 78, 36, 0.28)',
-                              boxShadow:
-                                'inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px -2px rgba(212, 78, 36, 0.24)',
-                              color: WARM_TOKENS.accent,
+                              backgroundColor: WARM_TOKENS.accent,
+                              color: WARM_TOKENS.accentContrastText,
+                              boxShadow: '0 6px 12px -6px rgba(194, 65, 12, 0.8)',
                             }}
                           >
                             <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
@@ -337,8 +334,8 @@ export const WarmAppShell: React.FC<WarmAppShellProps> = ({
                           className="warm-lg-interactive relative h-[48px] rounded-full flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
                           style={{
                             color: isHistoryActive
-                              ? WARM_TOKENS.accentTextOnLight
-                              : 'rgba(25, 29, 34, 0.72)',
+                              ? WARM_TOKENS.canvasBg
+                              : WARM_TOKENS.inkSecondary,
                           }}
                         >
                           {isHistoryActive && (

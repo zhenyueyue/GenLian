@@ -180,7 +180,7 @@ export function GlassSegmentedControl<T extends string>({
             className={`warm-lg-interactive relative rounded-full flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer transition-colors ${buttonClassName}`}
             style={{
               color: isActive
-                ? WARM_TOKENS.accentTextOnLight
+                ? WARM_TOKENS.canvasBg
                 : contained
                 ? WARM_TOKENS.inkSecondary
                 : WARM_TOKENS.inkMuted,
@@ -234,7 +234,7 @@ export const GlassOverlay: React.FC<GlassOverlayProps> = ({
     <div
       className={`absolute inset-0 z-40 backdrop-blur-md flex flex-col items-center justify-center px-6 text-center ${className}`}
       style={{
-        backgroundColor: 'rgba(249, 247, 243, 0.92)',
+        backgroundColor: 'rgba(244, 241, 235, 0.94)',
         color: WARM_TOKENS.inkPrimary,
         ...style,
       }}
