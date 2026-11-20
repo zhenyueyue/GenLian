@@ -15,12 +15,13 @@ private struct TrainingPreferences: Codable {
     var postponedUntil: [String: Date] = [:]
     var voiceEnabled = true
     var coach: VoiceCoachPreferences?
+    var customPlans: [WorkoutPlan]?
 }
 
 @MainActor
 @Observable
 final class TrainingAppModel {
-    private(set) var plans: [WorkoutPlan] = []
+    private(set) var builtInPlans: [WorkoutPlan] = []
     private(set) var archive = TrainingArchive()
     private(set) var available = false
     var errorMessage: String?
@@ -45,7 +46,13 @@ final class TrainingAppModel {
         }
     }
 
+    var customPlans: [WorkoutPlan] { preferences.customPlans ?? [] }
+    var plans: [WorkoutPlan] { builtInPlans + customPlans }
     var plan: WorkoutPlan? { plans.first { $0.id == preferences.planID } ?? plans.first }
+    var exerciseLibrary: [Exercise] {
+        var seen: Set<String> = []
+        return builtInPlans.flatMap(\.exercises).filter { seen.insert($0.name).inserted }
+    }
     var voiceEnabled: Bool { coachPreferences.enabled }
     var coachPreferences: VoiceCoachPreferences { preferences.coach ?? .init(enabled: preferences.voiceEnabled) }
     var coachNotifications: TrainingNotificationScheduler { coach.notifications }
@@ -53,7 +60,7 @@ final class TrainingAppModel {
     func open() {
         guard controller == nil else { return }
         do {
-            plans = try BuiltInCatalog.load()
+            builtInPlans = try BuiltInCatalog.load()
             #if DEBUG
             let sessionController = try UITestLaunch.controller()
             #else
@@ -74,6 +81,37 @@ final class TrainingAppModel {
     func select(_ plan: WorkoutPlan) {
         preferences.planID = plan.id
         savePreferences()
+    }
+
+    func saveCustomPlan(_ plan: WorkoutPlan) -> Bool {
+        var updated = preferences
+        var plans = customPlans
+        if let index = plans.firstIndex(where: { $0.id == plan.id }) {
+            plans[index] = plan
+        } else {
+            plans.append(plan)
+        }
+        updated.customPlans = plans
+        updated.planID = plan.id
+        updated.setups[plan.id] = customSetup(for: plan)
+        updated.postponedUntil.removeValue(forKey: plan.id)
+        do {
+            let bytes = try JSONEncoder().encode(updated)
+            defaults.set(bytes, forKey: Self.preferencesKey)
+            preferences = updated
+            return true
+        } catch {
+            report(error)
+            return false
+        }
+    }
+
+    func customSetup(for plan: WorkoutPlan) -> PlanSetup {
+        let existing = setup(for: plan)
+        return PlanSetup(load: existing.load, rest: RestSettings(
+            exerciseSeconds: plan.exerciseRestSeconds, roundSeconds: plan.roundRestSeconds,
+            autoAdvance: existing.rest.autoAdvance
+        ))
     }
 
     func setup(for plan: WorkoutPlan) -> PlanSetup {
@@ -100,12 +138,14 @@ final class TrainingAppModel {
         savePreferences()
     }
 
-    func start(_ plan: WorkoutPlan, setup value: PlanSetup? = nil) -> Bool {
+    func start(_ plan: WorkoutPlan, setup value: PlanSetup? = nil, rememberSetup: Bool = true) -> Bool {
         let chosen = value ?? setup(for: plan)
         guard perform({ try $0.start(plan, rest: chosen.rest, load: chosen.load) }) else { return false }
-        preferences.setups[plan.id] = chosen
-        preferences.postponedUntil.removeValue(forKey: plan.id)
-        savePreferences()
+        if rememberSetup {
+            preferences.setups[plan.id] = chosen
+            preferences.postponedUntil.removeValue(forKey: plan.id)
+            savePreferences()
+        }
         return true
     }
 

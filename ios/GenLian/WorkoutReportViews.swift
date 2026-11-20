@@ -202,7 +202,7 @@ private struct WorkoutRecordContent: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, minHeight: typeSize.isAccessibilitySize ? height + 32 : height, alignment: .bottomLeading)
         .background {
-            WarmPhotoView(photo: WarmMedia.plans[session.plan.id]?.wide)
+            WarmPhotoView(photo: WarmMedia.cover(session.plan))
                 .saturation(session.outcome == .zeroSets ? 0 : 1)
                 .opacity(session.outcome == .zeroSets ? 0.65 : 1)
                 .overlay {

@@ -9,6 +9,7 @@ struct TodayView: View {
     let start: @MainActor () -> Void
     let showSetup: @MainActor () -> Void
     let showDetail: @MainActor (Int) -> Void
+    let editPlan: @MainActor (WorkoutPlan?) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.warmReduceTransparency) private var reduceTransparency
@@ -21,6 +22,9 @@ struct TodayView: View {
     private var postponed: Bool { model.isPostponed(plan) }
     private var canStart: Bool { model.available && (!postponed || model.archive.current != nil) }
     private var hasEquipment: Bool { plan.exercises.contains { $0.dumbbellCount > 0 } }
+    private var planVolume: String {
+        plan.category == .custom ? "\(plan.exercises.count) 个动作 · \(plan.plannedSetCount) 组" : plan.estimatedMinutesRange
+    }
 
     private var heroTitleParts: (title: String, scope: String?) {
         guard plan.title.hasSuffix("）"), let split = plan.title.firstIndex(of: "（"), split != plan.title.startIndex else {
@@ -39,8 +43,12 @@ struct TodayView: View {
                         hero(height: heroHeight(for: viewport.size))
                         VStack(alignment: .leading, spacing: 24) {
                             actions
+                            planActions
+                            if !model.customPlans.isEmpty {
+                                courseSection("我的计划", plans: model.customPlans)
+                            }
                             movementList
-                            courseGrid
+                            courseSection("更换训练内容", plans: model.builtInPlans)
                         }
                         .padding(.horizontal, Warm.pageEdge)
                         .padding(.bottom, 14)
@@ -95,7 +103,7 @@ struct TodayView: View {
 
     private func hero(height: CGFloat) -> some View {
         ZStack(alignment: .bottomLeading) {
-            WarmPhotoView(photo: media?.hero)
+            WarmPhotoView(photo: WarmMedia.cover(plan, hero: true))
                 .scaleEffect(reduceMotion ? 1 : 1 + min(0.07, scrollY * 0.00035))
                 .offset(y: reduceMotion ? 0 : min(96, scrollY * 0.26))
                 .opacity(reduceMotion ? 1 : max(0.35, 1 - scrollY / 390))
@@ -116,7 +124,7 @@ struct TodayView: View {
                 Text(heroTitleParts.title).font(.system(size: heroTitle, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier(AccessibilityID.Today.title)
-                Text("\(plan.estimatedMinutesRange) · \(plan.rounds) 轮 · \(hasEquipment ? setup.load.display : "徒手自重")")
+                Text("\(planVolume) · \(plan.rounds) 轮 · \(hasEquipment ? setup.load.display : "徒手自重")")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(Warm.secondary)
             }
@@ -176,6 +184,20 @@ struct TodayView: View {
                         .font(.caption.monospacedDigit().weight(.semibold))
                         .foregroundStyle(Warm.slate)
                         .frame(minWidth: 44, minHeight: 44)
+                }
+            }
+        }
+    }
+
+    private var planActions: some View {
+        VStack(spacing: 8) {
+            WarmGlassButton(title: "动作库与自建计划", icon: "list.bullet.rectangle", fillsWidth: true) {
+                editPlan(nil)
+            }
+            .accessibilityIdentifier("today.customPlan")
+            if plan.category == .custom {
+                WarmGlassButton(title: "编辑当前计划", icon: "pencil", fillsWidth: true) {
+                    editPlan(plan)
                 }
             }
         }
@@ -250,7 +272,12 @@ struct TodayView: View {
                 Text(exercise.targetMuscle).foregroundStyle(Warm.secondary)
                 Text("\(exercise.dumbbellCount == 0 ? "徒手自重" : setup.load.display) · \(exercise.tempo)")
                     .foregroundStyle(Warm.slate)
-                if exercise.unilateral { Text("左右各练一组").foregroundStyle(Warm.slate) }
+                if exercise.unilateral {
+                    Text(exercise.setsPerRound == 1 ? "左右各练一组" : "左右各练 \(exercise.setsPerRound) 组")
+                        .foregroundStyle(Warm.slate)
+                } else if plan.category == .custom {
+                    Text("每轮 \(exercise.setsPerRound) 组").foregroundStyle(Warm.slate)
+                }
                 if WarmMedia.stage(exercise.id) == nil { Text("暂无该动作姿态图").foregroundStyle(Warm.secondary) }
             }
             .font(.caption)
@@ -263,36 +290,43 @@ struct TodayView: View {
         .frame(minHeight: 44)
     }
 
-    private var courseGrid: some View {
+    private func courseSection(_ title: String, plans: [WorkoutPlan]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("更换训练内容").font(.headline).accessibilityAddTraits(.isHeader)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: typeSize.isAccessibilitySize ? 1 : 2)) {
-                ForEach(model.plans) { option in
-                    Button { model.select(option) } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            WarmPhotoView(photo: WarmMedia.plans[option.id]?.wide)
-                                .frame(height: 70)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                            HStack {
-                                Text(option.category.rawValue).font(.subheadline.weight(.semibold))
-                                Spacer()
-                                if plan.id == option.id {
-                                    Image(systemName: "checkmark").foregroundStyle(Warm.accentText)
-                                }
+            Text(title).font(.headline).accessibilityAddTraits(.isHeader)
+            courseChoices(plans)
+        }
+    }
+
+    private func courseChoices(_ plans: [WorkoutPlan]) -> some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: typeSize.isAccessibilitySize ? 1 : 2)) {
+            ForEach(plans) { option in
+                Button { model.select(option) } label: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        WarmPhotoView(photo: WarmMedia.cover(option))
+                            .frame(height: 70)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        HStack {
+                            Text(option.category == .custom ? option.title : option.category.rawValue)
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            if plan.id == option.id {
+                                Image(systemName: "checkmark").foregroundStyle(Warm.accentText)
                             }
-                            Text(option.estimatedMinutesRange).font(.caption.monospacedDigit()).foregroundStyle(Warm.secondary)
                         }
-                        .padding(8)
-                        .background(Warm.limestone, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(plan.id == option.id ? Warm.accent : Warm.divider, lineWidth: 1.5)
-                        }
+                        Text(option.category == .custom ? "\(option.exercises.count) 个动作 · \(option.rounds) 轮" : option.estimatedMinutesRange)
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(Warm.secondary)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(plan.id == option.id ? .isSelected : [])
-                    .accessibilityIdentifier(AccessibilityID.Today.course(option.id))
+                    .padding(8)
+                    .background(Warm.limestone, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(plan.id == option.id ? Warm.accent : Warm.divider, lineWidth: 1.5)
+                    }
                 }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(plan.id == option.id ? .isSelected : [])
+                .accessibilityIdentifier(AccessibilityID.Today.course(option.id))
             }
         }
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+import TrainingCore
 
 struct WarmPhoto: Sendable {
     let name: String
@@ -51,6 +52,11 @@ enum WarmMedia {
             kicker: "恢复日 · 舒展与呼吸", intent: "温和唤醒胸椎旋转与髋部活动度，为身体留出长久余量。"
         )
     ]
+
+    static func cover(_ plan: WorkoutPlan, hero: Bool = false) -> WarmPhoto? {
+        if let media = plans[plan.id] { return hero ? media.hero : media.wide }
+        return plan.exercises.lazy.compactMap { hero ? stage($0.id) : wide($0.id) }.first
+    }
 
     static func stage(_ id: String) -> WarmPhoto? {
         switch id {

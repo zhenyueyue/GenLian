@@ -5,6 +5,7 @@ public enum WorkoutCategory: String, Codable, Sendable {
     case strengthB = "力量 B"
     case cardio = "有氧"
     case recovery = "恢复日"
+    case custom = "自建计划"
 }
 
 public enum SetMeasurement: Codable, Equatable, Sendable {

@@ -216,6 +216,45 @@ struct WorkoutHistoryTests {
         #expect(result.statistics == HistoryStatistics(effectiveSessions: 0, completedSessions: 0, elapsedSeconds: 0, loggedSets: 0))
     }
 
+    @Test func customPlanPreservesSequenceMeasurementsAndArchivedSnapshot() throws {
+        let press = try #require(try plan("strength-a").exercises.first)
+        let stretch = try #require(try plan("recovery").exercises.first)
+        var draft = WorkoutPlanDraft()
+        draft.title = "  居家力量与伸展  "
+        draft.items = [.init(stretch), .init(press)]
+        draft.items.swapAt(0, 1)
+        draft.items[0].sets = 2
+        draft.items[0].targetValue = 8
+        draft.items[1].targetValue = 25
+        draft.exerciseRestSeconds = 45
+        let workout = try #require(draft.makePlan())
+
+        #expect(workout.title == "居家力量与伸展")
+        #expect(workout.category == .custom)
+        #expect(workout.exercises.map(\.id) == [press.id, stretch.id])
+        #expect(workout.exercises.map(\.target) == [.repetitions(8), .seconds(25)])
+        #expect(workout.plannedSetCount == 4)
+
+        let store = TestStore()
+        let clock = TestClock()
+        let controller = try TrainingController(store: store, clock: clock)
+        let completed = try finish(workout, using: controller, clock: clock)
+        #expect(completed.restSettings.exerciseSeconds == 45)
+        #expect(completed.loggedSets.map(\.key.side) == [.bilateral, .bilateral, .left, .right])
+        #expect(completed.loggedSets.map(\.result.measurement) == [.repetitions(8), .repetitions(8), .seconds(18), .seconds(18)])
+        try #require(try controller.archiveFinished(completed.id))
+
+        var edited = WorkoutPlanDraft(editing: workout, rest: completed.restSettings)
+        edited.items.removeFirst()
+        let replacement = try #require(edited.makePlan())
+        #expect(replacement.id == workout.id)
+        try #require(try controller.start(replacement))
+        let encoded = try JSONEncoder().encode(controller.archive)
+        let decoded = try JSONDecoder().decode(TrainingArchive.self, from: encoded)
+        #expect(decoded.history.first?.plan == workout)
+        #expect(decoded.current?.plan == replacement)
+    }
+
     private func plan(_ id: String) throws -> WorkoutPlan {
         try #require(BuiltInCatalog.load().first { $0.id == id })
     }

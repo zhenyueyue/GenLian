@@ -72,7 +72,7 @@ struct TrainingHistoryView: View {
                 Warm.canvas
                 if !reduceTransparency {
                     RadialGradient(colors: [Warm.accent.opacity(0.07), Warm.canvas], center: .top, startRadius: 12, endRadius: 320)
-                    if let first = history.records.first, let cover = WarmMedia.plans[first.plan.id]?.wide {
+                    if let first = history.records.first, let cover = WarmMedia.cover(first.plan) {
                         WarmPhotoView(photo: cover)
                             .frame(height: 210)
                             .blur(radius: 24)
@@ -212,7 +212,7 @@ struct TrainingHistoryView: View {
                 }
                 .foregroundStyle(.white)
                 .background {
-                    WarmPhotoView(photo: WarmMedia.plans[session.plan.id]?.wide)
+                    WarmPhotoView(photo: WarmMedia.cover(session.plan))
                         .saturation(session.outcome == .zeroSets ? 0 : 1)
                         .overlay {
                             if reduceTransparency {
@@ -242,7 +242,7 @@ struct TrainingHistoryView: View {
         return Button { selectedID = session.id } label: {
             HStack(alignment: .center, spacing: 10) {
                 if !typeSize.isAccessibilitySize {
-                    WarmPhotoView(photo: WarmMedia.plans[session.plan.id]?.wide)
+                    WarmPhotoView(photo: WarmMedia.cover(session.plan))
                         .saturation(session.outcome == .zeroSets ? 0 : 1)
                         .frame(width: 88, height: 66)
                         .overlay(alignment: .bottomTrailing) {

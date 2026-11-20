@@ -35,6 +35,12 @@ private struct TrainingShell: View {
     @State private var focusedHistoryID: UUID?
     @State private var justArchivedID: UUID?
     @State private var setupPlan: WorkoutPlan?
+    @State private var planEditor: PlanEditor?
+
+    private struct PlanEditor: Identifiable {
+        let plan: WorkoutPlan?
+        var id: String { plan?.id ?? "new" }
+    }
 
     private enum HomeTab: Hashable {
         case today, start, archive
@@ -104,6 +110,15 @@ private struct TrainingShell: View {
                 setupPlan = nil
             }
         }
+        .sheet(item: $planEditor) { editor in
+            WorkoutPlanBuilderView(model: model, plan: editor.plan) {
+                planEditor = nil
+            } start: { plan in
+                guard model.start(plan, setup: model.customSetup(for: plan), rememberSetup: false) else { return }
+                planEditor = nil
+                showPlayer()
+            }
+        }
         .onChange(of: scenePhase, initial: true) { _, value in
             model.setScenePhase(value)
         }
@@ -146,7 +161,8 @@ private struct TrainingShell: View {
                 TodayView(
                     model: model, plan: plan, startTitle: startTitle, start: openOrStart,
                     showSetup: { setupPlan = plan },
-                    showDetail: { index in switchPage { detailIndex = index } }
+                    showDetail: { index in switchPage { detailIndex = index } },
+                    editPlan: { planEditor = PlanEditor(plan: $0) }
                 )
                 .modifier(HomeTabAppearance())
             }
