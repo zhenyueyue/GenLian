@@ -104,7 +104,7 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                     className="pointer-events-none absolute inset-0"
                     style={{
                       background:
-                        'linear-gradient(180deg, rgba(249,247,243,0.48) 0%, rgba(249,247,243,0) 34%, rgba(249,247,243,0.88) 82%, #F9F7F3 100%)',
+                        'linear-gradient(180deg, rgba(244,241,235,0.48) 0%, rgba(244,241,235,0) 34%, rgba(244,241,235,0.88) 82%, #F4F1EB 100%)',
                     }}
                   />
 
@@ -146,7 +146,7 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                         : '部分完成（已保留实录）'}
                     </div>
                     <h1
-                      className="mt-1.5 text-[26px] font-semibold leading-[1.16] tracking-[-0.02em] text-balance"
+                      className="mt-1.5 font-editorial-serif text-[28px] font-semibold leading-[1.14] tracking-[-0.03em] text-balance"
                       style={{ color: WARM_TOKENS.inkPrimary }}
                     >
                       {selectedRecord.title}
@@ -370,7 +370,7 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
               className="absolute inset-0"
               style={{
                 background:
-                  'radial-gradient(120% 55% at 85% 22%, rgba(212, 78, 36, 0.055) 0%, rgba(232, 224, 210, 0.32) 45%, rgba(249, 247, 243, 0) 100%)',
+                  'radial-gradient(120% 55% at 85% 18%, rgba(194, 65, 12, 0.07) 0%, rgba(232, 224, 210, 0.28) 42%, rgba(244, 241, 235, 0) 100%)',
               }}
             />
             {filteredRecords[0] && (
@@ -402,7 +402,7 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                     个人训练志
                   </div>
                   <h1
-                    className="text-[26px] font-semibold tracking-[-0.02em] leading-[1.18] mt-0.5"
+                    className="font-editorial-serif text-[30px] font-semibold tracking-[-0.03em] leading-[1.12] mt-0.5"
                     style={{ color: WARM_TOKENS.inkPrimary }}
                   >
                     训练档案
@@ -449,13 +449,12 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
               </div>
             </div>
 
-            <div className="px-5">
-              {/* 方案 2 精密 3 列累计度量带 */}
+            <div className="px-4">
               <section
-                className="grid grid-cols-3 gap-4 py-5"
-                style={{ borderBottom: `1px solid ${WARM_TOKENS.hairlineBorder}` }}
+                className="mt-4 grid grid-cols-3 overflow-hidden rounded-2xl bg-white"
+                style={{ boxShadow: `inset 0 0 0 1px ${WARM_TOKENS.hairlineBorder}` }}
               >
-              <div>
+              <div className="px-3 py-3.5">
                 <div
                   className="font-display-b text-[28px] font-semibold leading-none tabular-nums"
                   style={{ color: WARM_TOKENS.inkPrimary }}
@@ -468,11 +467,15 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                     次
                   </span>
                 </div>
-                <div className="text-[12px] mt-1.5" style={{ color: WARM_TOKENS.inkMuted }}>
-                  有效训练（完整 {fullCompletedCount}）
+                <div className="text-[12px] mt-1.5 leading-snug" style={{ color: WARM_TOKENS.inkMuted }}>
+                  有效训练
+                  <div>完整 {fullCompletedCount}</div>
                 </div>
               </div>
-              <div>
+              <div
+                className="px-3 py-3.5"
+                style={{ borderLeft: `1px solid ${WARM_TOKENS.hairlineBorder}` }}
+              >
                 <div
                   className="font-display-b text-[28px] font-semibold leading-none tabular-nums"
                   style={{ color: WARM_TOKENS.inkPrimary }}
@@ -489,7 +492,10 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                   累计时长
                 </div>
               </div>
-              <div>
+              <div
+                className="px-3 py-3.5"
+                style={{ borderLeft: `1px solid ${WARM_TOKENS.hairlineBorder}` }}
+              >
                 <div
                   className="font-display-b text-[28px] font-semibold leading-none tabular-nums"
                   style={{ color: WARM_TOKENS.accent }}
@@ -625,8 +631,8 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                     backgroundColor: WARM_TOKENS.surfaceBg,
                     boxShadow:
                       justArchivedId === featuredRecord.id
-                        ? `0 0 0 2px ${WARM_TOKENS.accent}, 0 12px 28px -12px rgba(212,78,36,0.34)`
-                        : 'inset 0 1px 0 rgba(255,255,255,0.32), 0 12px 28px -14px rgba(25,29,34,0.24)',
+                        ? `0 0 0 2px ${WARM_TOKENS.accent}, 0 16px 32px -16px rgba(194,65,12,0.45)`
+                        : '0 16px 32px -18px rgba(28,25,23,0.4)',
                   }}
                 >
                   <img
@@ -665,12 +671,12 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                       </span>
                     </div>
 
-                    <h2 className="mt-1 text-[20px] font-semibold leading-[1.24] text-white">
+                    <h2 className="mt-1 font-editorial-serif text-[24px] font-semibold leading-[1.2] text-white">
                       {featuredRecord.title}
                     </h2>
 
-                    <div className="mt-1.5 flex items-center justify-between font-mono-num text-[12px] text-white/85">
-                      <span>
+                    <div className="mt-1.5 flex items-center justify-between gap-3 font-mono-num text-[12px] text-white/85">
+                      <span className="min-w-0 truncate">
                         {formatTimeMMSS(featuredRecord.durationSeconds)} ·{' '}
                         {featuredRecord.loggedSets.length}/{featuredRecord.plannedSetsCount} 组 ·{' '}
                         {featuredRecord.primaryWeightLabel}
@@ -685,6 +691,24 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
               </section>
             )}
 
+            {filteredRecords.length === 0 && (
+              <section
+                className="mt-6 rounded-2xl px-4 py-8 text-center"
+                style={{
+                  backgroundColor: WARM_TOKENS.surfaceWhiteLift,
+                  boxShadow: `inset 0 0 0 1px ${WARM_TOKENS.hairlineBorder}`,
+                }}
+              >
+                <div className="text-[15px] font-semibold" style={{ color: WARM_TOKENS.inkPrimary }}>
+                  这个分类还没有训练记录
+                </div>
+                <p className="mt-1.5 text-[13px] leading-[1.6]" style={{ color: WARM_TOKENS.inkSecondary }}>
+                  完成一次训练并收入档案后，会显示在这里。也可以切换到「全部」查看已有实录。
+                </p>
+              </section>
+            )}
+
+            {remainingRecords.length > 0 && (
             <section className="mt-6">
               <div
                 className="flex items-center justify-between text-[12px] mb-2.5"
@@ -787,6 +811,7 @@ export const WarmHistoryView: React.FC<WarmHistoryViewProps> = ({
                 })}
               </div>
             </section>
+            )}
             </div>
           </div>
         </motion.div>

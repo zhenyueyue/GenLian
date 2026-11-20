@@ -194,7 +194,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                   : '提前结束 · 保留部分实录'}
               </div>
               <h1
-                className="mt-1.5 text-[26px] font-semibold leading-[1.18] tracking-[-0.02em] text-balance"
+                className="mt-1.5 font-editorial-serif text-[28px] font-semibold leading-[1.16] tracking-[-0.03em] text-balance"
                 style={{ color: WARM_TOKENS.inkPrimary }}
               >
                 {isCompleted
@@ -382,7 +382,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
           style={{
             paddingBottom: `calc(${isSE ? '16px' : '24px'} + env(safe-area-inset-bottom, 0px))`,
             background:
-              'linear-gradient(180deg, rgba(249,247,243,0) 0%, rgba(249,247,243,0.08) 100%)',
+              'linear-gradient(180deg, rgba(244,241,235,0) 0%, rgba(244,241,235,0.08) 100%)',
           }}
         >
           <GlassDock className="pointer-events-auto">
@@ -394,7 +394,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                 backgroundColor: WARM_TOKENS.accent,
                 color: WARM_TOKENS.accentContrastText,
                 boxShadow:
-                  'inset 0 1px 0 rgba(255,255,255,0.34), 0 8px 20px -6px rgba(212,78,36,0.38)',
+                  'inset 0 1px 0 rgba(255,255,255,0.34), 0 8px 20px -6px rgba(194,65,12,0.55)',
               }}
             >
               收入个人训练档案
@@ -543,7 +543,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
         style={{
           background: isDimmedStage
             ? 'linear-gradient(180deg, rgba(25,29,34,0.34) 0%, rgba(25,29,34,0.12) 60%, transparent 100%)'
-            : 'linear-gradient(180deg, rgba(249,247,243,0.58) 0%, rgba(249,247,243,0.24) 58%, rgba(249,247,243,0) 100%)',
+            : 'linear-gradient(180deg, rgba(244,241,235,0.58) 0%, rgba(244,241,235,0.24) 58%, rgba(244,241,235,0) 100%)',
         }}
       />
       <div
@@ -552,7 +552,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
         }`}
         style={{
           background: isActivePhase
-            ? 'linear-gradient(180deg, rgba(249,247,243,0) 0%, rgba(249,247,243,0.42) 38%, rgba(249,247,243,0.78) 72%, rgba(249,247,243,0.92) 100%)'
+            ? 'linear-gradient(180deg, rgba(244,241,235,0) 0%, rgba(244,241,235,0.42) 38%, rgba(244,241,235,0.78) 72%, rgba(244,241,235,0.92) 100%)'
             : WARM_TOKENS.playerBottomScrimOverlay,
         }}
       />
@@ -583,7 +583,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                       ? WARM_TOKENS.accent
                       : curr
                       ? WARM_TOKENS.restTextPrimary
-                      : 'rgba(249,247,243,0.28)'
+                      : 'rgba(244,241,235,0.28)'
                     : done
                     ? WARM_TOKENS.accent
                     : curr
@@ -695,7 +695,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                 第 {currentRound} 轮 · 准备就位
               </div>
               <h1
-                className="mt-1.5 text-[27px] font-semibold leading-[1.2]"
+                className="mt-1.5 font-editorial-serif text-[30px] font-semibold leading-[1.16]"
                 style={{ color: WARM_TOKENS.restTextPrimary }}
               >
                 {currentExercise.name}
@@ -872,7 +872,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                     ).padStart(2, '0')}`}
               </div>
               <h1
-                className="mt-1.5 text-[28px] font-semibold leading-[1.2]"
+                className="mt-1.5 font-editorial-serif text-[30px] font-semibold leading-[1.16]"
                 style={{ color: WARM_TOKENS.restTextPrimary }}
               >
                 {currentExercise.name}
@@ -1162,8 +1162,8 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                     </div>
 
                     <h1
-                      className={`mt-0.5 font-semibold leading-[1.18] truncate ${
-                        isSE ? 'text-[22px]' : 'text-[25px]'
+                      className={`mt-0.5 font-editorial-serif font-semibold leading-[1.16] truncate ${
+                        isSE ? 'text-[24px]' : 'text-[28px]'
                       }`}
                       style={{ color: WARM_TOKENS.inkPrimary }}
                     >
@@ -1285,7 +1285,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                     backgroundColor: WARM_TOKENS.accent,
                     color: WARM_TOKENS.accentContrastText,
                     boxShadow:
-                      'inset 0 1px 0 rgba(255,255,255,0.34), 0 10px 24px -8px rgba(212,78,36,0.42)',
+                      'inset 0 1px 0 rgba(255,255,255,0.34), 0 10px 24px -8px rgba(194,65,12,0.6)',
                   }}
                 >
                   <Check className="w-5 h-5 stroke-[2.25]" />
@@ -1346,7 +1346,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
           >
             主动暂停 · 已暂停 {pausedSeconds}s
           </div>
-          <h2 className="mt-2 text-[24px] font-semibold text-balance">
+          <h2 className="mt-2 font-editorial-serif text-[26px] font-semibold text-balance">
             暂不记录完成，也不跳过动作
           </h2>
           <p className="mt-2 text-[13px]" style={{ color: WARM_TOKENS.inkSecondary }}>
@@ -1361,7 +1361,7 @@ export const WarmPlayerView: React.FC<WarmPlayerViewProps> = ({
                 backgroundColor: WARM_TOKENS.accent,
                 color: WARM_TOKENS.accentContrastText,
                 boxShadow:
-                  'inset 0 1px 0 rgba(255,255,255,0.34), 0 10px 24px -8px rgba(212,78,36,0.42)',
+                  'inset 0 1px 0 rgba(255,255,255,0.34), 0 10px 24px -8px rgba(194,65,12,0.6)',
               }}
             >
               <Play className="w-4 h-4 fill-current" />

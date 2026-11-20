@@ -63,7 +63,7 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
   const isSE = deviceSize === 'se';
   const topSafePad = isSE ? 'pt-[32px]' : 'pt-[50px]';
   const bottomScrollPad = isSE ? 'pb-32' : 'pb-36';
-  const heroHeightClass = isSE ? 'h-[425px]' : deviceSize === 'standard' ? 'h-[500px]' : 'h-[540px]';
+  const heroHeightClass = isSE ? 'h-[268px]' : deviceSize === 'standard' ? 'h-[312px]' : 'h-[340px]';
 
   const media = WARM_PLAN_MEDIA[plan.id] ?? WARM_PLAN_MEDIA['strength-a'];
   const { mainTitle, scopeTag } = splitTitleParts(plan.title);
@@ -88,15 +88,10 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
         className={`absolute inset-x-0 top-0 z-20 ${topSafePad} px-5 pb-3 transition-colors duration-300 flex items-center justify-between gap-3 ${
           headerDocked ? 'warm-lg-header-blur' : ''
         }`}
-        style={{
-          background: headerDocked
-            ? undefined
-            : 'linear-gradient(180deg, rgba(249,247,243,0.58) 0%, rgba(249,247,243,0.22) 56%, rgba(249,247,243,0) 100%)',
-        }}
       >
         <div className="min-w-0 flex items-baseline gap-2.5">
           <span
-            className="text-[18px] font-semibold tracking-[0.015em] shrink-0"
+            className="font-editorial-serif text-[22px] font-semibold tracking-[-0.03em] shrink-0"
             style={{ color: WARM_TOKENS.inkPrimary }}
           >
             跟练
@@ -157,10 +152,14 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
         onScroll={(e) => setScrollY(e.currentTarget.scrollTop)}
         className={`iphone-scroll flex-1 overflow-y-auto ${bottomScrollPad}`}
       >
-        {/* 1. 全幅晨光 Hero（方案 1 温润运动沉浸 × 方案 2 干净留白排版） */}
-        <section
-          className={`relative w-full ${heroHeightClass} overflow-hidden`}
-          style={{ backgroundColor: WARM_TOKENS.surfaceBg }}
+        {/* 1. 圆角课程照片卡：标题压在可读遮罩上，把动作列表让给首屏 */}
+        <section className={`px-4 ${isSE ? 'pt-[76px]' : 'pt-[92px]'}`}>
+        <div
+          className={`relative w-full ${heroHeightClass} overflow-hidden rounded-[28px]`}
+          style={{
+            backgroundColor: WARM_TOKENS.surfaceBg,
+            boxShadow: '0 22px 40px -28px rgba(28, 25, 23, 0.55)',
+          }}
         >
           <AnimatePresence mode="sync">
             <motion.div
@@ -189,64 +188,72 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
             </motion.div>
           </AnimatePresence>
 
-          {/* 多段无缝过渡到矿物白画布 */}
           <div
             className="pointer-events-none absolute inset-0"
             style={{ background: WARM_TOKENS.heroBottomScrim }}
           />
 
-          {/* Hero 底部标题锁组 */}
           <div
-            className="absolute inset-x-0 bottom-0 z-10 px-5 pb-3.5"
+            className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4"
             style={{
               opacity: heroCopyOpacity,
               transform: `translate3d(0, ${heroCopyY}px, 0)`,
             }}
           >
-            <div
-              className="text-[12px] font-semibold tracking-[0.03em]"
-              style={{ color: WARM_TOKENS.accentTextOnLight }}
-            >
+            <div className="text-[12px] font-semibold tracking-[0.04em] text-white/85">
               {media.kicker}
               {scopeTag ? ` · ${scopeTag}` : ''}
             </div>
 
             <h1
-              className={`mt-1.5 font-semibold tracking-[-0.025em] leading-[1.14] text-balance ${
-                isSE ? 'text-[26px]' : 'text-[31px]'
+              className={`mt-1 font-editorial-serif font-semibold tracking-[-0.03em] leading-[1.12] text-balance text-white ${
+                isSE ? 'text-[28px]' : 'text-[32px]'
               }`}
-              style={{ color: WARM_TOKENS.inkPrimary }}
             >
               {mainTitle}
             </h1>
+          </div>
+        </div>
+        </section>
 
-            <div
-              className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono-num text-[12px]"
-              style={{ color: WARM_TOKENS.inkSecondary }}
-            >
-              <span>{plan.estimatedMinutesRange}</span>
-              <span aria-hidden="true" className="opacity-30">
-                ·
-              </span>
-              <span>{plan.rounds} 轮循环</span>
-              <span aria-hidden="true" className="opacity-30">
-                ·
-              </span>
-              <span className="font-medium" style={{ color: WARM_TOKENS.accentTextOnLight }}>
-                {activePlate ? activePlate.shortLabel : '徒手无负重'}
-              </span>
-            </div>
+        <section className="px-4 pt-3">
+          <div
+            className="grid grid-cols-3 overflow-hidden rounded-2xl bg-white"
+            style={{ boxShadow: `inset 0 0 0 1px ${WARM_TOKENS.hairlineBorder}` }}
+          >
+            {(
+              [
+                { label: '预计时长', value: plan.estimatedMinutesRange, accent: false },
+                { label: '循环', value: `${plan.rounds} 轮`, accent: false },
+                {
+                  label: '当前配重',
+                  value: activePlate ? activePlate.shortLabel : '徒手',
+                  accent: true,
+                },
+              ] as const
+            ).map((item, index) => (
+              <div
+                key={item.label}
+                className="min-w-0 px-3 py-3"
+                style={{
+                  borderLeft: index === 0 ? undefined : `1px solid ${WARM_TOKENS.hairlineBorder}`,
+                }}
+              >
+                <div className="text-[11px]" style={{ color: WARM_TOKENS.inkMuted }}>
+                  {item.label}
+                </div>
+                <div
+                  className="mt-1 font-display-b text-[13px] font-semibold leading-[1.3] line-clamp-2"
+                  style={{ color: item.accent ? WARM_TOKENS.accentTextOnLight : WARM_TOKENS.inkPrimary }}
+                >
+                  {item.value}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* 2. 地平线主行动区：单一高意向品牌橙 CTA + 精密文字信息 */}
-        <section
-          className="px-5 pt-2 pb-5"
-          style={{
-            backgroundColor: WARM_TOKENS.canvasBg,
-            borderBottom: `1px solid ${WARM_TOKENS.hairlineBorder}`,
-          }}
-        >
+        <section className="px-4 pt-3 pb-1">
           {postponedNote ? (
             <GlassPanel variant="chip" className="rounded-2xl p-4">
               <div
@@ -275,8 +282,7 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
                   style={{
                     backgroundColor: WARM_TOKENS.accent,
                     color: WARM_TOKENS.accentContrastText,
-                    boxShadow:
-                      'inset 0 1px 0 rgba(255,255,255,0.32), 0 8px 18px -6px rgba(212,78,36,0.36)',
+                    boxShadow: '0 10px 22px -12px rgba(194, 65, 12, 0.7)',
                   }}
                 >
                   恢复今日训练
@@ -299,8 +305,7 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
                   style={{
                     backgroundColor: WARM_TOKENS.accent,
                     color: WARM_TOKENS.accentContrastText,
-                    boxShadow:
-                      'inset 0 1px 0 rgba(255,255,255,0.34), 0 10px 24px -8px rgba(212,78,36,0.42)',
+                    boxShadow: '0 12px 24px -14px rgba(194, 65, 12, 0.75)',
                   }}
                 >
                   <Play className="w-4 h-4 fill-current" />
@@ -340,10 +345,10 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
         </section>
 
         {/* 3. 今日动作顺序（精密分隔线 + 完整动作构图） */}
-        <section className="mt-6 px-5">
-          <div className="flex items-baseline justify-between mb-3.5">
+        <section className="mt-5 px-4">
+          <div className="flex items-baseline justify-between mb-3">
             <h2
-              className="text-[15.5px] font-semibold tracking-[0.005em]"
+              className="font-editorial-serif text-[20px] font-semibold tracking-[-0.02em]"
               style={{ color: WARM_TOKENS.inkPrimary }}
             >
               今日动作顺序
@@ -360,11 +365,10 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onInspectExerciseIdx(0)}
-                  className="w-full text-left group cursor-pointer pb-4"
-                  style={{ borderBottom: `1px solid ${WARM_TOKENS.hairlineBorder}` }}
+                  className="w-full text-left group cursor-pointer"
                 >
                   <div
-                    className="relative aspect-[16/9] w-full overflow-hidden rounded-xl"
+                    className="relative aspect-[16/9] w-full overflow-hidden rounded-[22px]"
                     style={{ backgroundColor: WARM_TOKENS.surfaceBackdropStudio }}
                   >
                     <img
@@ -515,10 +519,10 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
         </section>
 
         {/* 4. 更换训练内容 */}
-        <section className="mt-7 px-5">
+        <section className="mt-7 px-4">
           <div className="flex items-baseline justify-between mb-3">
             <h2
-              className="text-[15.5px] font-semibold tracking-[0.005em]"
+              className="font-editorial-serif text-[20px] font-semibold tracking-[-0.02em]"
               style={{ color: WARM_TOKENS.inkPrimary }}
             >
               更换训练内容
@@ -538,7 +542,7 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
                   key={opt.id}
                   type="button"
                   onClick={() => selectPlan(idx)}
-                  className="text-left rounded-xl overflow-hidden transition-all cursor-pointer"
+                  className="text-left rounded-2xl overflow-hidden transition-all cursor-pointer"
                   style={{
                     backgroundColor: selected ? WARM_TOKENS.surfaceWhiteLift : WARM_TOKENS.surfaceBg,
                     boxShadow: selected
@@ -775,9 +779,7 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
                             color: active
                               ? WARM_TOKENS.accentContrastText
                               : WARM_TOKENS.inkSecondary,
-                            boxShadow: active
-                              ? 'inset 0 1px 0 rgba(255,255,255,0.28), 0 6px 14px -5px rgba(212,78,36,0.34)'
-                              : undefined,
+                            boxShadow: active ? '0 8px 16px -8px rgba(194, 65, 12, 0.65)' : undefined,
                           }}
                         >
                           {sec}s
@@ -828,8 +830,7 @@ export const WarmTodayView: React.FC<WarmTodayViewProps> = ({
                     style={{
                       backgroundColor: WARM_TOKENS.accent,
                       color: WARM_TOKENS.accentContrastText,
-                      boxShadow:
-                        'inset 0 1px 0 rgba(255,255,255,0.32), 0 8px 18px -6px rgba(212,78,36,0.36)',
+                      boxShadow: '0 10px 20px -12px rgba(194, 65, 12, 0.7)',
                     }}
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />

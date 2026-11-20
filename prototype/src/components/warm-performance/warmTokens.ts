@@ -29,125 +29,118 @@ export const WARM_TOKENS = {
   brandNameZh: '暖光运动',
   brandNameEn: 'Warm Performance',
   positioning:
-    '以「日光运动」的晨光温度与全幅沉浸为基底，吸收「清透运动」的精密数字排版、克制分隔线与轻量悬浮控件，建立单一且统一的私人健身品牌系统。',
+    '以骨色纸面、衬线标题与柿色行动点构成私人训练志。摄影仍是内容，界面退成稳定的版面、卡片与实色控件。',
 
-  // 60% 主画布：温润矿物白（非死白、非发黄奶油、非深黑）
-  canvasBg: '#F9F7F3',
-  // 30% 结构表面：浅石灰岩与纯白抬升层（明度差 <= 4.5%，避免厚重卡片堆叠）
-  surfaceBg: '#F1EFE8',
-  surfaceElevatedBg: '#E6E2D8',
-  surfaceBackdropStudio: '#EAE5DC',
+  // 60% 主画布：骨色纸（比纯白暖，比旧矿物白更干净）
+  canvasBg: '#F4F1EB',
+  // 30% 结构表面：抬升白卡与浅石色槽
+  surfaceBg: '#E9E4DB',
+  surfaceElevatedBg: '#DDD7CC',
+  surfaceBackdropStudio: '#E7E1D6',
   surfaceWhiteLift: '#FFFFFF',
-  hairlineBorder: 'rgba(25, 29, 34, 0.085)',
-  hairlineStrong: 'rgba(25, 29, 34, 0.14)',
+  hairlineBorder: 'rgba(28, 25, 23, 0.10)',
+  hairlineStrong: 'rgba(28, 25, 23, 0.18)',
 
-  // 主次文字：深矿物石墨 + 中性冷石板灰（吸收方案 2 的清透精准度，对比度 >= 4.5:1）
-  inkPrimary: '#191D22',
-  inkSecondary: '#4D545E',
-  inkMuted: '#686F7A',
+  // 主次文字：暖墨与石色，小字在纸面上保持 AA
+  inkPrimary: '#1C1917',
+  inkSecondary: '#44403C',
+  inkMuted: '#5C564F',
 
-  // 10% 单一品牌强调色：暖光运动橙（克制用于关键运动触发与进度，绝不与蓝色竞争）
-  accent: '#D44E24',
-  accentHover: '#BF421B',
-  accentTextOnLight: '#B83E18', // 12-13px 小字在 #F9F7F3 上的 WCAG AA 校准色 (~5.6:1)
-  accentSoft: 'rgba(212, 78, 36, 0.10)',
+  // 10% 品牌强调：柿色，白字对比约 5.2:1；浅底小字用更深的 #9A3412
+  accent: '#C2410C',
+  accentHover: '#9A3412',
+  accentTextOnLight: '#9A3412',
+  accentSoft: 'rgba(194, 65, 12, 0.12)',
   accentContrastText: '#FFFFFF',
 
-  // 克制辅助冷色：仅用于恢复/暂停/次要数值注释，绝不充当主品牌色或 CTA
-  auxSlate: '#415A72',
-  auxSlateSoft: 'rgba(65, 90, 114, 0.09)',
-  warning: '#B86214',
+  // 辅助色只用于休息、暂停与次要标注
+  auxSlate: '#3E5348',
+  auxSlateSoft: 'rgba(62, 83, 72, 0.10)',
+  warning: '#92400E',
 
-  // 实色结构按钮（非大面积纯黑，保持温润石墨质感）
-  graphiteCtaBg: '#191D22',
-  graphiteCtaText: '#F9F7F3',
+  graphiteCtaBg: '#1C1917',
+  graphiteCtaText: '#F4F1EB',
 
-  // 顶部吸顶栏与 Hero 光影过渡（强化明亮天光下的小字可读性）
   heroTopScrim:
-    'linear-gradient(180deg, rgba(249,247,243,0.92) 0%, rgba(249,247,243,0.62) 56%, rgba(249,247,243,0) 100%)',
+    'linear-gradient(180deg, rgba(244,241,235,0.92) 0%, rgba(244,241,235,0.62) 56%, rgba(244,241,235,0) 100%)',
   heroBottomScrim:
-    'linear-gradient(180deg, rgba(249,247,243,0) 0%, rgba(249,247,243,0) 44%, rgba(249,247,243,0.72) 72%, rgba(249,247,243,0.96) 88%, #F9F7F3 100%)',
-  dockedHeaderBg: 'rgba(249, 247, 243, 0.92)',
+    'linear-gradient(180deg, rgba(28,25,23,0) 0%, rgba(28,25,23,0.08) 36%, rgba(28,25,23,0.62) 72%, rgba(28,25,23,0.82) 100%)',
+  dockedHeaderBg: 'rgba(244, 241, 235, 0.92)',
 
-  // 动作舞台与受控光学悬浮控件（少量 Apple Liquid Glass 质感）
-  playerGlassBg: 'rgba(249, 247, 243, 0.84)',
-  playerGlassBorder: 'rgba(25, 29, 34, 0.13)',
-  playerGlassHighlight: 'inset 0 0.75px 0 rgba(255, 255, 255, 0.82)',
+  playerGlassBg: 'rgba(255, 255, 255, 0.92)',
+  playerGlassBorder: 'rgba(28, 25, 23, 0.10)',
+  playerGlassHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.9)',
   playerTopScrim:
-    'linear-gradient(180deg, rgba(249,247,243,0.92) 0%, rgba(249,247,243,0.72) 56%, rgba(249,247,243,0.22) 82%, rgba(249,247,243,0) 100%)',
+    'linear-gradient(180deg, rgba(244,241,235,0.94) 0%, rgba(244,241,235,0.72) 52%, rgba(244,241,235,0.16) 82%, rgba(244,241,235,0) 100%)',
   playerBottomScrimActive:
-    'linear-gradient(180deg, rgba(249,247,243,0) 0%, rgba(249,247,243,0.68) 32%, rgba(249,247,243,0.94) 64%, rgba(249,247,243,0.99) 100%)',
+    'linear-gradient(180deg, rgba(244,241,235,0) 0%, rgba(244,241,235,0.72) 28%, rgba(244,241,235,0.96) 62%, #F4F1EB 100%)',
   playerBottomScrimOverlay:
-    'linear-gradient(180deg, rgba(25,29,34,0) 0%, rgba(25,29,34,0.22) 52%, rgba(25,29,34,0.46) 100%)',
-  playerProgressPending: 'rgba(25, 29, 34, 0.20)',
+    'linear-gradient(180deg, rgba(28,25,23,0) 0%, rgba(28,25,23,0.28) 48%, rgba(28,25,23,0.55) 100%)',
+  playerProgressPending: 'rgba(28, 25, 23, 0.18)',
 
-  // 休息阶段：温和降亮 72% + 轻透石板暮纱（空间与人物轮廓保持清晰可见，彻底杜绝黑屏压抑）
   restDimFilterClass: 'scale-[1.015] brightness-[0.72] saturate-[0.82]',
-  restDimVeilClass: 'bg-[#1F242B]/32',
-  restTextPrimary: '#F9F7F3',
-  restTextSecondary: '#EEF1F4',
-  restAccentText: '#FF9E7D',
-  restProgressTrack: 'rgba(249, 247, 243, 0.28)',
-  restPreviewCardBg: 'rgba(249, 247, 243, 0.96)',
-  restPreviewCardBorder: 'rgba(25, 29, 34, 0.11)',
-  restSecondaryBtnBg: 'rgba(249, 247, 243, 0.22)',
-  restSecondaryBtnBorder: 'rgba(249, 247, 243, 0.34)',
+  restDimVeilClass: 'bg-[#1C1917]/38',
+  restTextPrimary: '#F4F1EB',
+  restTextSecondary: '#F3EDE4',
+  restAccentText: '#FFB08A',
+  restProgressTrack: 'rgba(244, 241, 235, 0.32)',
+  restPreviewCardBg: 'rgba(255, 252, 248, 0.94)',
+  restPreviewCardBorder: 'rgba(255, 255, 255, 0.45)',
+  restSecondaryBtnBg: 'rgba(28, 25, 23, 0.55)',
+  restSecondaryBtnBorder: 'rgba(255, 255, 255, 0.22)',
 
-  // 底部浅色悬浮胶囊导航栏（轻盈暖白磨砂 × 浅米白激活胶囊 × 细描边）
-  bottomNavBg: 'rgba(252, 250, 246, 0.88)',
-  bottomNavBorder: 'rgba(25, 29, 34, 0.085)',
-  bottomNavHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.92)',
-  bottomNavShadow: '0 12px 32px -10px rgba(25, 29, 34, 0.11), 0 2px 8px -2px rgba(25, 29, 34, 0.04)',
-  bottomNavActivePillBg: '#F3EEE3',
-  bottomNavActivePillBorder: 'rgba(212, 78, 36, 0.22)',
-  bottomNavCenterBg: 'rgba(212, 78, 36, 0.09)',
-  bottomNavCenterBorder: 'rgba(212, 78, 36, 0.24)',
+  bottomNavBg: 'rgba(255, 252, 248, 0.94)',
+  bottomNavBorder: 'rgba(28, 25, 23, 0.08)',
+  bottomNavHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+  bottomNavShadow: '0 16px 40px -18px rgba(28, 25, 23, 0.32), 0 2px 8px -4px rgba(28, 25, 23, 0.08)',
+  bottomNavActivePillBg: '#1C1917',
+  bottomNavActivePillBorder: 'transparent',
+  bottomNavCenterBg: '#C2410C',
+  bottomNavCenterBorder: 'transparent',
 
-  // 摄影光学调色（消除过黄/家居感，校准为清透晨光）
-  photoFilterClass: 'brightness-[1.01] contrast-[1.03] saturate-[0.94] hue-rotate-[-2deg]',
-  photoCoolAirTintClass: 'bg-[#F2F6FA]/[0.06]',
+  photoFilterClass: 'brightness-[1.02] contrast-[1.04] saturate-[0.92] hue-rotate-[-3deg]',
+  photoCoolAirTintClass: 'bg-[#F7F4EF]/[0.05]',
 
-  // 详情/总结头图淡入渐变
   detailHeaderOverlay:
-    'linear-gradient(180deg, rgba(249,247,243,0.78) 0%, rgba(249,247,243,0) 34%, rgba(249,247,243,0.88) 82%, #F9F7F3 100%)',
+    'linear-gradient(180deg, rgba(244,241,235,0.72) 0%, rgba(244,241,235,0) 32%, rgba(244,241,235,0.9) 80%, #F4F1EB 100%)',
 } as const;
 
 export const WARM_PALETTE_SPEC = [
   {
-    role: '60% 主画布 · Warm Mineral White',
-    name: '暖白矿物纸',
-    hex: '#F9F7F3',
-    usage: '首页底色、训练档案、单次详情与动作拆解底布，柔和清透、不刺眼也不昏暗。',
+    role: '60% 主画布 · Bone Paper',
+    name: '骨色纸',
+    hex: '#F4F1EB',
+    usage: '首页、档案、详情与动作拆解的底纸。比纯白暖，比旧矿物白更干净。',
   },
   {
-    role: '30% 结构表面 · Soft Limestone',
-    name: '浅石灰岩',
-    hex: '#F1EFE8',
-    usage: '分段开关底槽、节拍卡片、月历容器与次级按钮，与主画布维持约 3.2% 轻量明度差。',
+    role: '30% 结构表面 · Lifted Card',
+    name: '抬升白卡',
+    hex: '#FFFFFF',
+    usage: '指标条、课程卡、档案条目与抽屉内容。以 1px 发丝线和短阴影与纸面分开。',
   },
   {
-    role: '主墨与结构锚点 · Mineral Graphite',
-    name: '深矿物石墨',
-    hex: '#191D22',
-    usage: '中文主标题、核心数字、当前进度段与次级确认操作（#F9F7F3 上对比度 15.8:1）。',
+    role: '主墨 · Warm Ink',
+    name: '暖墨',
+    hex: '#1C1917',
+    usage: '衬线主标题、核心数字、选中导航胶囊与次级确认。在 #F4F1EB 上对比充足。',
   },
   {
-    role: '辅墨 · Slate Neutral',
-    name: '中性石板灰',
-    hex: '#4D545E',
-    usage: '动作说明、目标肌群与辅助文案（对比度 7.1:1），平衡暖光摄影不发黄浊。',
+    role: '辅墨 · Stone',
+    name: '石色正文',
+    hex: '#44403C',
+    usage: '动作说明、肌群与辅助文案。弱化注记用 #5C564F，小字仍保持 AA。',
   },
   {
-    role: '10% 唯一品牌强调 · Warm Signal Orange',
-    name: '暖光运动橙',
-    hex: '#D44E24',
-    usage: '主开练按钮、完成本动作、已完成进度线、底部激活态与月历节点；12px 小字校准为 #B83E18。',
+    role: '10% 品牌强调 · Persimmon',
+    name: '柿色',
+    hex: '#C2410C',
+    usage: '主开练按钮、完成动作、进度与月历完整日。白字约 5.2:1；12px 浅底小字用 #9A3412。',
   },
   {
-    role: '克制辅助冷色 · Quiet Coastal Slate',
-    name: '静谧辅色灰蓝',
-    hex: '#415A72',
-    usage: '仅用于暂停余量、休息微调提示与晨光摄影天光中和，不参与主操作竞争。',
+    role: '辅助 · Quiet Sage',
+    name: '静绿',
+    hex: '#3E5348',
+    usage: '只用于休息设定、暂停余量与次要标注，不和柿色主按钮抢注意力。',
   },
 ] as const;
 
@@ -160,9 +153,9 @@ export const WARM_TYPE_SCALE = [
   },
   {
     level: 'Hero 与页面主标题',
-    font: 'Plus Jakarta Sans + PingFang SC',
-    spec: '31px / 26px · SemiBold 600 · 行高 1.15 · -0.02em',
-    sample: '全身哑铃力量循环',
+    font: 'Fraunces + Noto Serif SC',
+    spec: '32px / 28px / 26px · SemiBold 600 · 行高 1.12',
+    sample: '全身均衡循环',
   },
   {
     level: '章节与动作列表标题',
@@ -186,9 +179,9 @@ export const WARM_TYPE_SCALE = [
 
 export const WARM_COMPONENT_SPECS = [
   {
-    title: '01 · 首页晨光 Hero 与 Horizon 操作坞',
+    title: '01 · 首页照片卡与首屏训练志',
     detail:
-      '力量、有氧、恢复三种课程共用同一套 #F9F7F3 / #D44E24 / #191D22 排版与操作骨架，仅以动作摄影与节律文案区分发力专注、有氧动态与舒展感。',
+      '力量、有氧、恢复共用骨色纸、衬线标题与柿色主按钮。首屏把课程照片收成圆角卡片，指标、开练和动作顺序同时露出。',
   },
   {
     title: '02 · 训练中全屏舞台与小字对比度保护',
@@ -201,9 +194,9 @@ export const WARM_COMPONENT_SPECS = [
       '进入休息后画面在 500ms 内温和降至 72% 亮度并叠加 32% 石板暮纱，保留阳光训练空间呼吸感；90px Outfit 倒计时配合 2.5px 细进度线与亮色预告卡。',
   },
   {
-    title: '04 · 浅色悬浮底栏与清爽训练档案',
+    title: '04 · 实色底栏与训练档案',
     detail:
-      '去掉厚重深色底栏与黑色药丸：首页、训练档案与单次详情统一采用暖白半透悬浮胶囊，选中态以浅米白胶囊、细描边与橙色小下划线轻盈表达；档案页延续精密数据带与逐轮实录明细。',
+      '底栏改为实色白卡。选中项用暖墨胶囊配浅色文字，开练保持柿色圆点。档案页用三列指标卡、可点日历和空分类提示。',
   },
 ] as const;
 
