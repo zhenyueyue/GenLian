@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-import TrainingCoach
+@testable import TrainingCoach
 import TrainingCore
 
 @Suite @MainActor
@@ -119,11 +119,14 @@ struct CoachPolicyTests {
         let training = try CoachFixture(rest: rest)
         try training.startRest()
         let resting = training.session
+        let reminder = try #require(CoachPolicy.reminder(for: resting, previous: nil, now: training.clock.date))
+        #expect(reminder.waitsForConfirmation)
+        #expect(reminder.phrase.hasSuffix("准备好就继续。"))
         try training.advance(30)
         let ready = training.session
         #expect(ready.phase == .restReady)
         #expect(CoachPolicy.context(resting) != CoachPolicy.context(ready))
-        #expect(CoachPolicy.prompts(from: resting, to: ready, preferences: .init()).first?.text.contains("俯身单臂哑铃划船") == true)
+        #expect(CoachPolicy.prompts(from: resting, to: ready, preferences: .init()).map(\.text) == [reminder.phrase])
 
         try training.send(.finishRest(try #require(ready.restOwner)))
         let transition = training.session
@@ -193,7 +196,8 @@ struct CoachPolicyTests {
         #expect(!CoachPolicy.allowsNotification(settings, permitted: false))
         #expect(CoachPolicy.allowsNotification(settings, permitted: true))
         #expect(CoachPolicy.liveSession(training.session) != nil)
-        #expect(CoachPolicy.prompts(from: ready, to: training.session, preferences: settings).count == 1)
+        #expect(CoachPolicy.prompts(from: ready, to: training.session, preferences: settings).map(\.text)
+            == ["开始！", "呼气推起，吸气慢慢放下。"])
     }
 
     @Test func timedHintsUseRealTargetAndDoNotCatchUpAfterAbsence() throws {
@@ -202,7 +206,7 @@ struct CoachPolicyTests {
         let initial = training.session
         try training.advance(20.2)
         let first = training.session
-        #expect(CoachPolicy.prompts(from: initial, to: first, preferences: .init()).map(\.text) == ["还剩十秒。"])
+        #expect(CoachPolicy.prompts(from: initial, to: first, preferences: .init()).map(\.text) == ["还剩十秒，稳住。"])
         try training.advance(7)
         let last = training.session
         #expect(CoachPolicy.prompts(from: first, to: last, preferences: .init()).map(\.text) == ["三、二、一。"])
@@ -221,7 +225,27 @@ struct CoachPolicyTests {
         #expect(CoachPolicy.prompts(from: left, to: right, preferences: .init()).isEmpty)
         try training.send(.complete(training.session.currentKey, .init(.seconds(30))))
         let prompt = CoachPolicy.prompts(from: right, to: training.session, preferences: .init())
-        #expect(prompt.map(\.text) == ["右侧完成，接下来左侧。"])
+        #expect(prompt.map(\.text) == ["好，换左侧。"])
+    }
+
+    @Test func recordingsCoverTheActualBuiltInExerciseNamesAndBothRestModes() throws {
+        let plans = try BuiltInCatalog.load()
+        var texts: Set<String> = ["开始！", "好，换右侧。", "好，换左侧。", "好，休息一下。",
+                                  "还剩十秒，稳住。", CoachPolicy.countdown, "好，今天练完了。做得很棒。"]
+        for exercise in plans.flatMap(\.exercises) {
+            texts.insert("准备。\(exercise.name)。")
+            texts.insert(CoachPolicy.technique(for: exercise))
+            for waitsForConfirmation in [true, false] {
+                texts.insert(CoachPolicy.restPhrase(exercise.name, waitsForConfirmation: waitsForConfirmation))
+            }
+        }
+        for round in ["一", "二", "三"] {
+            texts.insert("第\(round)轮完成。节奏很好，继续保持。")
+        }
+        for text in texts {
+            let file = try #require(CoachVoiceAssets.clip(for: text), "Missing recording for \(text)")
+            try RestNotificationAudio.validate(file)
+        }
     }
 }
 

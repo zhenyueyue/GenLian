@@ -58,14 +58,16 @@ public struct RestReminder: Equatable, Sendable {
     public let event: String
     public let nextExercise: String
     public let deadline: Date
+    public let waitsForConfirmation: Bool
 
-    public init(event: String, nextExercise: String, deadline: Date) {
+    public init(event: String, nextExercise: String, deadline: Date, waitsForConfirmation: Bool = false) {
         self.event = event
         self.nextExercise = nextExercise
         self.deadline = deadline
+        self.waitsForConfirmation = waitsForConfirmation
     }
 
-    public var phrase: String { CoachPolicy.restPhrase(nextExercise) }
+    public var phrase: String { CoachPolicy.restPhrase(nextExercise, waitsForConfirmation: waitsForConfirmation) }
 }
 
 public struct RestNotificationRequest: Equatable, Sendable {
@@ -94,6 +96,8 @@ public struct RestNotificationRequest: Equatable, Sendable {
 }
 
 public enum CoachPolicy {
+    public static let countdown = "三、二、一。"
+
     public enum AudioAccess: Equatable, Sendable {
         case stop, finishCurrent, speak
     }
@@ -117,13 +121,15 @@ public enum CoachPolicy {
               let owner = session.restOwner else { return nil }
         let event = "\(session.id)-\(key(owner))-\(rest.targetSeconds)"
         let name = session.plan.exercises[next.exerciseIndex].name
+        let waitsForConfirmation = !session.restSettings.autoAdvance
         // Normal timer ticks do not replace an already scheduled notification.
         let candidate = now.addingTimeInterval(rest.remainingSeconds)
         if let previous, previous.event == event, previous.nextExercise == name,
+           previous.waitsForConfirmation == waitsForConfirmation,
            abs(previous.deadline.timeIntervalSince(candidate)) < 1.5 {
             return previous
         }
-        return RestReminder(event: event, nextExercise: name, deadline: candidate)
+        return RestReminder(event: event, nextExercise: name, deadline: candidate, waitsForConfirmation: waitsForConfirmation)
     }
 
     public static func context(_ session: WorkoutSession) -> String {
@@ -148,54 +154,63 @@ public enum CoachPolicy {
         guard let session = liveSession(session), !session.isPaused,
               [.prepare, .active, .nextTransition, .setComplete].contains(session.phase),
               let next = session.upcomingPosition else { return nil }
-        return restPhrase(session.plan.exercises[next.exerciseIndex].name)
+        return restPhrase(session.plan.exercises[next.exerciseIndex].name, waitsForConfirmation: !session.restSettings.autoAdvance)
     }
 
-    static func restPhrase(_ name: String) -> String { "休息结束，准备开始\(name)。" }
+    static func restPhrase(_ name: String, waitsForConfirmation: Bool) -> String {
+        let next = "休息结束。下一项，\(name)。"
+        return waitsForConfirmation ? next + "准备好就继续。" : next
+    }
 
     public static func prompts(
         from old: WorkoutSession?, to session: WorkoutSession, preferences: VoiceCoachPreferences
     ) -> [CoachPrompt] {
-        guard preferences.enabled, let old, old.id == session.id, !session.isPaused,
-              !session.needsResume, !old.needsResume else { return [] }
-
+        guard preferences.enabled, !session.isPaused, !session.needsResume else { return [] }
         let id = "\(session.id)-\(key(session.currentKey))"
+        let prepare = CoachPrompt(id: "\(id)-prepare", text: "准备。\(session.currentExercise.name)。")
+        if session.phase == .prepare && old?.id != session.id { return [prepare] }
+        guard let old, old.id == session.id, !old.needsResume else { return [] }
+
         if old.phase != .summary && session.phase == .summary {
-            return session.outcome == .completed ? [.init(id: "\(session.id)-done", text: "今天的训练完成，做得不错。")] : []
+            return session.outcome == .completed ? [.init(id: "\(session.id)-done", text: "好，今天练完了。做得很棒。")] : []
         }
         if preferences.restEnd,
            old.phase == .rest && (session.phase == .restReady || session.phase == .nextTransition),
            let next = old.upcomingPosition, let owner = old.restOwner {
-            let text = restPhrase(old.plan.exercises[next.exerciseIndex].name)
+            let text = restPhrase(old.plan.exercises[next.exerciseIndex].name, waitsForConfirmation: session.phase == .restReady)
             return [.init(id: "\(session.id)-\(key(owner))-rest-end", text: text)]
         }
+        if old.phase != .rest && session.phase == .rest {
+            return [.init(id: "\(id)-rest-start", text: "好，休息一下。")]
+        }
+        if old.phase != .nextTransition && session.phase == .nextTransition {
+            return preferences.restEnd && old.phase == .restReady ? [] : [prepare]
+        }
         if old.phase != .active && session.phase == .active {
-            let exercise = session.currentExercise
-            var text = "接下来是\(exercise.name)。"
+            var cues = [CoachPrompt(id: "\(id)-start", text: "开始！")]
             if preferences.technique {
-                text += "\(exercise.coachingCue)。"
-                if exercise.tempo.split(separator: "-").count == 3 {
-                    text += "节奏\(exercise.tempo.replacingOccurrences(of: "-", with: "、"))。"
-                }
+                cues.append(.init(id: "\(id)-technique", text: technique(for: session.currentExercise)))
             }
-            return [.init(id: "\(id)-start", text: text)]
+            return cues
         }
         if old.phase == .active && session.phase == .active && old.position == session.position,
            old.side != session.side && session.loggedSets.dropFirst(old.loggedSets.count).contains(where: { $0.key == old.currentKey }) {
-            let text = session.side == .right ? "左侧完成，接下来右侧。" : "右侧完成，接下来左侧。"
+            let text = session.side == .right ? "好，换右侧。" : "好，换左侧。"
             return [.init(id: "\(id)-side", text: text)]
         }
         if preferences.encouragement, old.phase == .active,
            session.rest?.kind == .round && old.rest == nil,
            session.loggedSets.filter({ $0.key.position.round == session.position.round }).count
                == session.plan.plannedSetCount / session.plan.rounds {
-            return [.init(id: "\(session.id)-round-\(session.position.round)", text: "第\(session.position.round)轮完成，继续保持。")]
+            let round = session.position.round
+            let number = [1: "一", 2: "二", 3: "三"][round] ?? String(round)
+            return [.init(id: "\(session.id)-round-\(round)", text: "第\(number)轮完成。节奏很好，继续保持。")]
         }
         guard preferences.timeHints, old.phase == .active, session.phase == .active,
               old.currentKey == session.currentKey, session.reviewPosition == nil,
               old.reviewPosition == nil, !old.isPaused,
               case .seconds(let target) = session.currentExercise.target else { return [] }
-        for (remaining, text) in [(3.0, "三、二、一。"), (10.0, "还剩十秒。")] {
+        for (remaining, text) in [(3.0, countdown), (10.0, "还剩十秒，稳住。")] {
             let threshold = Double(target) - remaining
             let elapsed = session.currentActionSeconds
             if threshold > 0, old.currentActionSeconds < threshold, elapsed >= threshold, elapsed - threshold < 1 {
@@ -203,6 +218,21 @@ public enum CoachPolicy {
             }
         }
         return []
+    }
+
+    static func technique(for exercise: Exercise) -> String {
+        switch exercise.name {
+        case "哑铃地板卧推": "呼气推起，吸气慢慢放下。"
+        case "俯身单臂哑铃划船": "手撑稳，手肘朝髋部拉。"
+        case "高脚杯哑铃深蹲": "哑铃贴近胸前，稳稳蹲下。"
+        case "仰卧死虫式核心控制": "下背贴垫，呼气伸展对侧手脚。"
+        case "站姿哑铃推举": "肋骨收住，呼气向上推。"
+        case "控制式哑铃侧平举": "肩放松，手肘带着哑铃抬到肩高。"
+        case "哑铃罗马尼亚硬拉": "髋往后坐，哑铃贴着腿往下。"
+        case "跪姿胸椎旋转伸展": "呼气，慢慢转。骨盆稳住。"
+        case "仰卧死虫式呼吸激活": "慢慢呼气，伸展对侧手和脚。"
+        default: exercise.coachingCue
+        }
     }
 
     private static func key(_ key: SetKey) -> String {

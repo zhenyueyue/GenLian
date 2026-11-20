@@ -10,7 +10,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "TrainingCore", resources: [.process("Resources")]),
-        .target(name: "TrainingCoach", dependencies: ["TrainingCore"]),
+        .target(name: "TrainingCoach", dependencies: ["TrainingCore"], resources: [.copy("Resources/CoachVoice")]),
         .testTarget(name: "TrainingCoreTests", dependencies: ["TrainingCore"]),
         .testTarget(name: "TrainingCoachTests", dependencies: ["TrainingCoach", "TrainingCore"])
     ]

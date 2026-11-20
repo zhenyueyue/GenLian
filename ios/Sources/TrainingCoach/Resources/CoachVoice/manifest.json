@@ -1,0 +1,278 @@
+{
+  "start": {
+    "text": "开始！",
+    "file": "start.caf",
+    "durationSeconds": 0.7,
+    "numberBeatSeconds": null
+  },
+  "switch-right": {
+    "text": "好，换右侧。",
+    "file": "switch-right.caf",
+    "durationSeconds": 1.53,
+    "numberBeatSeconds": null
+  },
+  "switch-left": {
+    "text": "好，换左侧。",
+    "file": "switch-left.caf",
+    "durationSeconds": 1.54,
+    "numberBeatSeconds": null
+  },
+  "rest-start": {
+    "text": "好，休息一下。",
+    "file": "rest-start.caf",
+    "durationSeconds": 1.75,
+    "numberBeatSeconds": null
+  },
+  "ten-seconds": {
+    "text": "还剩十秒，稳住。",
+    "file": "ten-seconds.caf",
+    "durationSeconds": 1.86,
+    "numberBeatSeconds": null
+  },
+  "round-1": {
+    "text": "第一轮完成。节奏很好，继续保持。",
+    "file": "round-1.caf",
+    "durationSeconds": 3.85,
+    "numberBeatSeconds": null
+  },
+  "round-2": {
+    "text": "第二轮完成。节奏很好，继续保持。",
+    "file": "round-2.caf",
+    "durationSeconds": 3.62,
+    "numberBeatSeconds": null
+  },
+  "round-3": {
+    "text": "第三轮完成。节奏很好，继续保持。",
+    "file": "round-3.caf",
+    "durationSeconds": 3.78,
+    "numberBeatSeconds": null
+  },
+  "workout-complete": {
+    "text": "好，今天练完了。做得很棒。",
+    "file": "workout-complete.caf",
+    "durationSeconds": 2.66,
+    "numberBeatSeconds": null
+  },
+  "prepare-floor-press": {
+    "text": "准备。哑铃地板卧推。",
+    "file": "prepare-floor-press.caf",
+    "durationSeconds": 2.54,
+    "numberBeatSeconds": null
+  },
+  "technique-floor-press": {
+    "text": "呼气推起，吸气慢慢放下。",
+    "file": "technique-floor-press.caf",
+    "durationSeconds": 2.67,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-floor-press": {
+    "text": "休息结束。下一项，哑铃地板卧推。",
+    "file": "rest-auto-floor-press.caf",
+    "durationSeconds": 4.25,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-floor-press": {
+    "text": "休息结束。下一项，哑铃地板卧推。准备好就继续。",
+    "file": "rest-manual-floor-press.caf",
+    "durationSeconds": 5.43,
+    "numberBeatSeconds": null
+  },
+  "prepare-single-row": {
+    "text": "准备。俯身单臂哑铃划船。",
+    "file": "prepare-single-row.caf",
+    "durationSeconds": 3.48,
+    "numberBeatSeconds": null
+  },
+  "technique-single-row": {
+    "text": "手撑稳，手肘朝髋部拉。",
+    "file": "technique-single-row.caf",
+    "durationSeconds": 2.53,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-single-row": {
+    "text": "休息结束。下一项，俯身单臂哑铃划船。",
+    "file": "rest-auto-single-row.caf",
+    "durationSeconds": 4.41,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-single-row": {
+    "text": "休息结束。下一项，俯身单臂哑铃划船。准备好就继续。",
+    "file": "rest-manual-single-row.caf",
+    "durationSeconds": 6.08,
+    "numberBeatSeconds": null
+  },
+  "prepare-goblet-squat": {
+    "text": "准备。高脚杯哑铃深蹲。",
+    "file": "prepare-goblet-squat.caf",
+    "durationSeconds": 3.04,
+    "numberBeatSeconds": null
+  },
+  "technique-goblet-squat": {
+    "text": "哑铃贴近胸前，稳稳蹲下。",
+    "file": "technique-goblet-squat.caf",
+    "durationSeconds": 2.74,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-goblet-squat": {
+    "text": "休息结束。下一项，高脚杯哑铃深蹲。",
+    "file": "rest-auto-goblet-squat.caf",
+    "durationSeconds": 4.83,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-goblet-squat": {
+    "text": "休息结束。下一项，高脚杯哑铃深蹲。准备好就继续。",
+    "file": "rest-manual-goblet-squat.caf",
+    "durationSeconds": 6.38,
+    "numberBeatSeconds": null
+  },
+  "prepare-dead-bug": {
+    "text": "准备。仰卧死虫式核心控制。",
+    "file": "prepare-dead-bug.caf",
+    "durationSeconds": 3.38,
+    "numberBeatSeconds": null
+  },
+  "technique-dead-bug": {
+    "text": "下背贴垫，呼气伸展对侧手脚。",
+    "file": "technique-dead-bug.caf",
+    "durationSeconds": 3.67,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-dead-bug": {
+    "text": "休息结束。下一项，仰卧死虫式核心控制。",
+    "file": "rest-auto-dead-bug.caf",
+    "durationSeconds": 4.58,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-dead-bug": {
+    "text": "休息结束。下一项，仰卧死虫式核心控制。准备好就继续。",
+    "file": "rest-manual-dead-bug.caf",
+    "durationSeconds": 5.94,
+    "numberBeatSeconds": null
+  },
+  "prepare-shoulder-press": {
+    "text": "准备。站姿哑铃推举。",
+    "file": "prepare-shoulder-press.caf",
+    "durationSeconds": 2.73,
+    "numberBeatSeconds": null
+  },
+  "technique-shoulder-press": {
+    "text": "肋骨收住，呼气向上推。",
+    "file": "technique-shoulder-press.caf",
+    "durationSeconds": 2.78,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-shoulder-press": {
+    "text": "休息结束。下一项，站姿哑铃推举。",
+    "file": "rest-auto-shoulder-press.caf",
+    "durationSeconds": 4.21,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-shoulder-press": {
+    "text": "休息结束。下一项，站姿哑铃推举。准备好就继续。",
+    "file": "rest-manual-shoulder-press.caf",
+    "durationSeconds": 5.44,
+    "numberBeatSeconds": null
+  },
+  "prepare-lateral-raise": {
+    "text": "准备。控制式哑铃侧平举。",
+    "file": "prepare-lateral-raise.caf",
+    "durationSeconds": 3.51,
+    "numberBeatSeconds": null
+  },
+  "technique-lateral-raise": {
+    "text": "肩放松，手肘带着哑铃抬到肩高。",
+    "file": "technique-lateral-raise.caf",
+    "durationSeconds": 3.43,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-lateral-raise": {
+    "text": "休息结束。下一项，控制式哑铃侧平举。",
+    "file": "rest-auto-lateral-raise.caf",
+    "durationSeconds": 4.2,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-lateral-raise": {
+    "text": "休息结束。下一项，控制式哑铃侧平举。准备好就继续。",
+    "file": "rest-manual-lateral-raise.caf",
+    "durationSeconds": 5.78,
+    "numberBeatSeconds": null
+  },
+  "prepare-rdl": {
+    "text": "准备。哑铃罗马尼亚硬拉。",
+    "file": "prepare-rdl.caf",
+    "durationSeconds": 2.6,
+    "numberBeatSeconds": null
+  },
+  "technique-rdl": {
+    "text": "髋往后坐，哑铃贴着腿往下。",
+    "file": "technique-rdl.caf",
+    "durationSeconds": 2.85,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-rdl": {
+    "text": "休息结束。下一项，哑铃罗马尼亚硬拉。",
+    "file": "rest-auto-rdl.caf",
+    "durationSeconds": 4.53,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-rdl": {
+    "text": "休息结束。下一项，哑铃罗马尼亚硬拉。准备好就继续。",
+    "file": "rest-manual-rdl.caf",
+    "durationSeconds": 6.3,
+    "numberBeatSeconds": null
+  },
+  "prepare-thoracic": {
+    "text": "准备。跪姿胸椎旋转伸展。",
+    "file": "prepare-thoracic.caf",
+    "durationSeconds": 3.26,
+    "numberBeatSeconds": null
+  },
+  "technique-thoracic": {
+    "text": "呼气，慢慢转。骨盆稳住。",
+    "file": "technique-thoracic.caf",
+    "durationSeconds": 2.82,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-thoracic": {
+    "text": "休息结束。下一项，跪姿胸椎旋转伸展。",
+    "file": "rest-auto-thoracic.caf",
+    "durationSeconds": 4.76,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-thoracic": {
+    "text": "休息结束。下一项，跪姿胸椎旋转伸展。准备好就继续。",
+    "file": "rest-manual-thoracic.caf",
+    "durationSeconds": 5.94,
+    "numberBeatSeconds": null
+  },
+  "prepare-dead-bug-breathe": {
+    "text": "准备。仰卧死虫式呼吸激活。",
+    "file": "prepare-dead-bug-breathe.caf",
+    "durationSeconds": 3.51,
+    "numberBeatSeconds": null
+  },
+  "technique-dead-bug-breathe": {
+    "text": "慢慢呼气，伸展对侧手和脚。",
+    "file": "technique-dead-bug-breathe.caf",
+    "durationSeconds": 3.06,
+    "numberBeatSeconds": null
+  },
+  "rest-auto-dead-bug-breathe": {
+    "text": "休息结束。下一项，仰卧死虫式呼吸激活。",
+    "file": "rest-auto-dead-bug-breathe.caf",
+    "durationSeconds": 4.76,
+    "numberBeatSeconds": null
+  },
+  "rest-manual-dead-bug-breathe": {
+    "text": "休息结束。下一项，仰卧死虫式呼吸激活。准备好就继续。",
+    "file": "rest-manual-dead-bug-breathe.caf",
+    "durationSeconds": 6.82,
+    "numberBeatSeconds": null
+  },
+  "countdown": {
+    "text": "三、二、一。",
+    "file": "countdown.caf",
+    "durationSeconds": 3.0,
+    "numberBeatSeconds": 1
+  }
+}

@@ -124,6 +124,20 @@ def verify_resources(app, results):
             raise SystemExit("The TrainingCore course resource is missing, duplicated or different from the source.")
         print(f"Verified TrainingCore plans in {plans[0].relative_to(app)}.", file=log, flush=True)
 
+        voice_source = Path("ios/Sources/TrainingCoach/Resources/CoachVoice")
+        voice_manifests = sorted(app.rglob("CoachVoice/manifest.json"))
+        if len(voice_manifests) != 1:
+            raise SystemExit("The prerecorded coach resource is missing or duplicated.")
+        voice_bundle = voice_manifests[0].parent
+        manifest = json.loads((voice_source / "manifest.json").read_bytes())
+        if json.loads(voice_manifests[0].read_bytes()) != manifest or not manifest:
+            raise SystemExit("The bundled coach index is empty or differs from the source.")
+        for clip in manifest.values():
+            audio = (voice_bundle / clip["file"]).read_bytes()
+            if not audio.startswith(b"caff") or audio != (voice_source / clip["file"]).read_bytes():
+                raise SystemExit(f"Bundled coach clip differs from the source: {clip['file']}.")
+        print(f"Verified {len(manifest)} prerecorded CAF files in {voice_bundle.relative_to(app)}.", file=log, flush=True)
+
         catalog = app / "Assets.car"
         if not catalog.is_file() or not catalog.stat().st_size:
             raise SystemExit("The compiled Assets.car is missing or empty.")
@@ -139,7 +153,7 @@ def verify_resources(app, results):
         if missing := expected - names:
             raise SystemExit("Missing compiled image sets: " + ", ".join(sorted(missing)))
         print("Verified all 13 image sets: " + ", ".join(sorted(expected)), file=log)
-    print("Verified TrainingCore resources and all 13 compiled image sets.")
+    print("Verified course data, prerecorded coach audio, and all 13 compiled image sets.")
 
 
 if __name__ == "__main__":

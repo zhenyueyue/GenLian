@@ -4,12 +4,13 @@ import OSLog
 import TrainingCoach
 
 @MainActor
-final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
+final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate, AVAudioPlayerDelegate {
     private enum AudioState {
         case inactive, activating, active(duckMusic: Bool), deactivating
     }
 
     private var synthesizer = AVSpeechSynthesizer()
+    private var recording: AVAudioPlayer?
     private let audio = VoiceCoachAudioSession()
     private let logger = Logger(subsystem: "com.genlian.app", category: "VoiceCoach")
     private var queue = CoachQueue()
@@ -21,6 +22,8 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
     private var blocksPlayback = false
     private var inForeground = false
     private var preferences = VoiceCoachPreferences()
+
+    private var isPlaying: Bool { recording != nil || utteranceID != nil }
 
     override init() {
         super.init()
@@ -50,7 +53,7 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
             stop()
         case .finishCurrent:
             queue.cancelPending()
-            if utteranceID == nil { releaseAudio() }
+            if !isPlaying { releaseAudio() }
         case .speak:
             for prompt in prompts { queue.enqueue(prompt) }
             speakNext()
@@ -58,7 +61,7 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
     }
 
     private func speakNext() {
-        guard utteranceID == nil else { return }
+        guard !isPlaying else { return }
         let now = ContinuousClock.now
         guard inForeground, !blocksPlayback, queue.firstReady(at: now) != nil else {
             releaseAudio()
@@ -75,10 +78,29 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
                 return
             }
             guard let prompt = queue.next(at: now) else { return }
+            if let clip = CoachVoiceAssets.clip(for: prompt.text), playRecording(clip, keepsCadence: prompt.text == CoachPolicy.countdown) {
+                return
+            }
             let utterance = Self.utterance(prompt.text, rate: preferences.rate, volume: preferences.volume)
             utteranceID = ObjectIdentifier(utterance)
             synthesizer.speak(utterance)
         }
+    }
+
+    private func playRecording(_ clip: URL, keepsCadence: Bool) -> Bool {
+        do {
+            let player = try AVAudioPlayer(contentsOf: clip)
+            player.delegate = self
+            player.volume = Float(min(1, max(0, preferences.volume)))
+            player.enableRate = !keepsCadence
+            if !keepsCadence { player.rate = Float(min(2, max(0.5, preferences.rate / 0.48))) }
+            recording = player
+            if player.play() { return true }
+            recording = nil
+        } catch {
+            logger.error("Unable to open prerecorded cue: \(error.localizedDescription, privacy: .public)")
+        }
+        return false
     }
 
     private func activateAudio(duckMusic: Bool) {
@@ -122,6 +144,9 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
 
     private func cancelSpeech() {
         queue.cancelPending()
+        let player = recording
+        recording = nil
+        player?.stop()
         guard utteranceID != nil else { return }
         utteranceID = nil
         synthesizer.stopSpeaking(at: .immediate)
@@ -142,6 +167,22 @@ final class VoiceCoachService: NSObject, AVSpeechSynthesizerDelegate {
         guard utteranceID == id else { return }
         utteranceID = nil
         speakNext()
+    }
+
+    private func didFinishRecording(_ id: ObjectIdentifier) {
+        guard let recording, ObjectIdentifier(recording) == id else { return }
+        self.recording = nil
+        speakNext()
+    }
+
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        let id = ObjectIdentifier(player)
+        Task { @MainActor [weak self] in self?.didFinishRecording(id) }
+    }
+
+    nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: (any Error)?) {
+        let id = ObjectIdentifier(player)
+        Task { @MainActor [weak self] in self?.didFinishRecording(id) }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {

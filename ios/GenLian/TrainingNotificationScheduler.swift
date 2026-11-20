@@ -143,9 +143,9 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
         }
     }
 
-    private func soundLocation(_ phrase: String) -> URL? {
+    private func soundLocation(_ phrase: String, recorded: Bool) -> URL? {
         guard let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return nil }
-        let key = "\(phrase)|\(preferences.rate)|\(preferences.volume)"
+        let key = recorded ? "coach-recording-v1|\(phrase)" : "\(phrase)|\(preferences.rate)|\(preferences.volume)"
         let hash = SHA256.hash(data: Data(key.utf8)).map { String(format: "%02x", Int($0)) }.joined()
         return library.appendingPathComponent("Sounds", isDirectory: true)
             .appendingPathComponent("genlian-\(hash).caf")
@@ -158,7 +158,8 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
             renderStatus = nil
             return
         }
-        guard let file = soundLocation(phrase) else {
+        let recording = CoachVoiceAssets.clip(for: phrase)
+        guard let file = soundLocation(phrase, recorded: recording != nil) else {
             audio = .failed
             renderStatus = "语音生成失败：找不到 Library/Sounds"
             return
@@ -184,17 +185,24 @@ final class TrainingNotificationScheduler: NSObject, UNUserNotificationCenterDel
                 }
             }
         }
-        guard inForeground, renderTask == nil, audio == .waiting else { return }
+        guard inForeground || recording != nil, renderTask == nil, audio == .waiting else { return }
         let rate = preferences.rate
         let volume = preferences.volume
-        renderStatus = "正在生成普通话提醒"
+        renderStatus = recording == nil ? "正在生成普通话提醒" : "正在准备预录语音提醒"
         renderTask = Task { [weak self] in
             guard let self else { return }
             do {
-                try await renderer.render(phrase, rate: rate, volume: volume, to: file)
+                if let recording {
+                    try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    let data = try Data(contentsOf: recording)
+                    try data.write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+                    try RestNotificationAudio.validate(file)
+                } else {
+                    try await renderer.render(phrase, rate: rate, volume: volume, to: file)
+                }
                 if audioFile == file {
                     audio = .verified(file.lastPathComponent)
-                    renderStatus = "普通话语音已生成并校验"
+                    renderStatus = recording == nil ? "普通话语音已生成并校验" : "预录语音已校验"
                 }
                 logger.info("Verified CAF: \(file.lastPathComponent, privacy: .public)")
             } catch {
